@@ -61,7 +61,28 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Custom restaurant colors
+				'warm-orange': 'hsl(var(--warm-orange))',
+				'deep-red': 'hsl(var(--deep-red))',
+				'golden-yellow': 'hsl(var(--golden-yellow))',
+				'warm-brown': 'hsl(var(--warm-brown))',
+				'cream': 'hsl(var(--cream))',
+				'spice-red': 'hsl(var(--spice-red))'
+			},
+			backgroundImage: {
+				'gradient-warm': 'var(--gradient-warm)',
+				'gradient-food': 'var(--gradient-food)',
+				'gradient-hero': 'var(--gradient-hero)'
+			},
+			boxShadow: {
+				'warm': 'var(--shadow-warm)',
+				'card': 'var(--shadow-card)',
+				'glow': 'var(--shadow-glow)'
+			},
+			transitionTimingFunction: {
+				'smooth': 'var(--transition-smooth)',
+				'bounce': 'var(--transition-bounce)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

@@ -18,6 +18,10 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // Restaurant themed variants
+        hero: "bg-gradient-warm text-white hover:shadow-glow transition-all duration-300 shadow-warm",
+        order: "bg-deep-red text-white hover:bg-spice-red transition-colors shadow-card",
+        menu: "bg-warm-orange text-white hover:bg-golden-yellow hover:text-warm-brown transition-colors",
       },
       size: {
         default: "h-10 px-4 py-2",
