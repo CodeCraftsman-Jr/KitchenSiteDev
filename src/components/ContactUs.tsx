@@ -4,25 +4,68 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Phone, 
-  Mail, 
-  MessageCircle, 
-  Send, 
-  MapPin, 
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import {
+  Phone,
+  Mail,
+  MessageCircle,
+  Send,
+  MapPin,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Loader2
 } from "lucide-react";
+import { contactFormSchema, type ContactFormData } from "@/lib/contactFormSchema";
+import { sendContactEmail } from "@/services/emailService";
 
 const ContactUs = () => {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "Message Sent!",
-      description: "Thank you for contacting us. We'll get back to you soon.",
-    });
+  // Initialize react-hook-form with Zod validation
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isValid }
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactFormSchema),
+    mode: "onChange"
+  });
+
+  const onSubmit = async (data: ContactFormData) => {
+    setIsSubmitting(true);
+
+    try {
+      const result = await sendContactEmail(data);
+
+      if (result.success) {
+        toast({
+          title: "Message Sent Successfully! ✅",
+          description: result.message,
+          duration: 5000,
+        });
+        reset(); // Clear the form
+      } else {
+        toast({
+          title: "Failed to Send Message ❌",
+          description: result.message,
+          variant: "destructive",
+          duration: 7000,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Unexpected Error ❌",
+        description: "Something went wrong. Please try again or call us directly.",
+        variant: "destructive",
+        duration: 7000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChatSupport = () => {
@@ -125,33 +168,97 @@ const ContactUs = () => {
           <Card className="shadow-card">
             <CardContent className="p-8">
               <h3 className="text-2xl font-bold text-primary mb-6">Send us a Message</h3>
-              <form className="space-y-6" onSubmit={handleFormSubmit}>
+              <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-primary mb-2 block">Name</label>
-                    <Input placeholder="Your full name" required />
+                    <label className="text-sm font-medium text-primary mb-2 block">
+                      Name <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      placeholder="Your full name"
+                      {...register("name")}
+                      className={errors.name ? "border-red-500" : ""}
+                    />
+                    {errors.name && (
+                      <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+                    )}
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-primary mb-2 block">Phone</label>
-                    <Input placeholder="Your phone number" required />
+                    <label className="text-sm font-medium text-primary mb-2 block">
+                      Phone <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      placeholder="Your phone number"
+                      {...register("phone")}
+                      className={errors.phone ? "border-red-500" : ""}
+                    />
+                    {errors.phone && (
+                      <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>
+                    )}
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-primary mb-2 block">Email</label>
-                  <Input type="email" placeholder="Your email address" required />
+                  <label className="text-sm font-medium text-primary mb-2 block">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="email"
+                    placeholder="Your email address"
+                    {...register("email")}
+                    className={errors.email ? "border-red-500" : ""}
+                  />
+                  {errors.email && (
+                    <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                  )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-primary mb-2 block">Subject</label>
-                  <Input placeholder="What is this about?" required />
+                  <label className="text-sm font-medium text-primary mb-2 block">
+                    Subject <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    placeholder="What is this about?"
+                    {...register("subject")}
+                    className={errors.subject ? "border-red-500" : ""}
+                  />
+                  {errors.subject && (
+                    <p className="text-red-500 text-xs mt-1">{errors.subject.message}</p>
+                  )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-primary mb-2 block">Message</label>
-                  <Textarea placeholder="Tell us how we can help you..." rows={5} required />
+                  <label className="text-sm font-medium text-primary mb-2 block">
+                    Message <span className="text-red-500">*</span>
+                  </label>
+                  <Textarea
+                    placeholder="Tell us how we can help you..."
+                    rows={5}
+                    {...register("message")}
+                    className={errors.message ? "border-red-500" : ""}
+                  />
+                  {errors.message && (
+                    <p className="text-red-500 text-xs mt-1">{errors.message.message}</p>
+                  )}
                 </div>
-                <Button type="submit" variant="hero" className="w-full">
-                  Send Message
-                  <Send className="ml-2 h-4 w-4" />
+                <Button
+                  type="submit"
+                  variant="hero"
+                  className="w-full"
+                  disabled={isSubmitting || !isValid}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending Message...
+                    </>
+                  ) : (
+                    <>
+                      Send Message
+                      <Send className="ml-2 h-4 w-4" />
+                    </>
+                  )}
                 </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  <span className="text-red-500">*</span> Required fields
+                </p>
               </form>
             </CardContent>
           </Card>
