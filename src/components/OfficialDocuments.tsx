@@ -2,8 +2,26 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileText, Shield, Award, Download, ExternalLink } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const OfficialDocuments = () => {
+  const { toast } = useToast();
+
+  const handleDownload = (docName: string) => {
+    toast({
+      title: "Download Started",
+      description: `Downloading ${docName}...`,
+    });
+    // In a real app, this would trigger the actual download
+  };
+
+  const handleViewExternal = (docName: string) => {
+    toast({
+      title: "Opening Document",
+      description: `Opening ${docName} in new window...`,
+    });
+    // In a real app, this would open the document in a new window
+  };
   const documents = [
     {
       id: 1,
@@ -118,11 +136,20 @@ const OfficialDocuments = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleDownload(doc.name)}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleViewExternal(doc.name)}
+                  >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </div>

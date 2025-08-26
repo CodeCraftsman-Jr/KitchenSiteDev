@@ -43,9 +43,9 @@ const RestaurantDetails = () => {
             Our Story & Heritage
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-            Founded in 2018, Spice Kitchen began as a passion project to bring authentic Indian flavors 
-            to the modern world. Our cloud kitchen model allows us to focus entirely on what matters most - 
-            creating exceptional food with traditional recipes passed down through generations.
+            Founded with a passion for authentic South Indian cuisine, Vasanth's Kitchen brings traditional
+            flavors and home-style cooking to Puducherry. We focus entirely on what matters most -
+            creating exceptional food with fresh ingredients and time-honored recipes passed down through generations.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
@@ -96,8 +96,8 @@ const RestaurantDetails = () => {
                   <div>
                     <p className="font-semibold">Address</p>
                     <p className="text-muted-foreground">
-                      Plot No. 15, Food Court Complex,<br />
-                      Andheri East, Mumbai - 400069
+                      Plot No: 50, 51 Mettu Street,<br />
+                      Chinna Kalapet, Puducherry
                     </p>
                   </div>
                 </div>
@@ -106,8 +106,8 @@ const RestaurantDetails = () => {
                   <div>
                     <p className="font-semibold">Operating Hours</p>
                     <p className="text-muted-foreground">
-                      Mon - Sun: 11:00 AM - 11:00 PM<br />
-                      Late night delivery available
+                      Mon - Sun: 9:00 AM - 12:00 PM<br />
+                      Fresh breakfast and morning meals
                     </p>
                   </div>
                 </div>
@@ -126,19 +126,21 @@ const RestaurantDetails = () => {
             </CardContent>
           </Card>
 
-          {/* Location Map Placeholder */}
+          {/* Location Map */}
           <Card className="shadow-card">
             <CardContent className="p-8">
               <h3 className="text-2xl font-bold text-primary mb-6">Find Us</h3>
-              <div className="bg-gradient-food rounded-lg h-64 flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="h-12 w-12 text-primary mx-auto mb-4" />
-                  <p className="text-lg font-semibold text-primary">Interactive Map</p>
-                  <p className="text-muted-foreground">
-                    Google Maps integration available<br />
-                    Click to view detailed location
-                  </p>
-                </div>
+              <div className="rounded-lg overflow-hidden">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3902.283786803163!2d79.85658649999999!3d12.0239735!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5365007e082633%3A0x6f47ab94b86d09f0!2sVasanth&#39;s%20Kitchen!5e0!3m2!1sen!2sin!4v1756202116491!5m2!1sen!2sin"
+                  width="100%"
+                  height="450"
+                  style={{border: 0}}
+                  allowFullScreen={true}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Vasanth's Kitchen Location"
+                />
               </div>
             </CardContent>
           </Card>

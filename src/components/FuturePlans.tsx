@@ -1,20 +1,38 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  MapPin, 
-  Calendar, 
-  TrendingUp, 
-  Users, 
-  Utensils, 
+import {
+  MapPin,
+  Calendar,
+  TrendingUp,
+  Users,
+  Utensils,
   Smartphone,
   Truck,
   Award,
   Target,
   Rocket
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const FuturePlans = () => {
+  const { toast } = useToast();
+
+  const handleSubscribeUpdates = () => {
+    toast({
+      title: "Subscribe to Updates",
+      description: "Redirecting to subscription form...",
+    });
+    // In a real app, this would open a subscription form
+  };
+
+  const handleCareerOpportunities = () => {
+    toast({
+      title: "Career Opportunities",
+      description: "Redirecting to careers page...",
+    });
+    // In a real app, this would redirect to a careers page
+  };
   const expansionPlans = [
     {
       title: "New Branch - Thane",
@@ -97,7 +115,7 @@ const FuturePlans = () => {
   ];
 
   const milestones = [
-    { year: "2024", target: "50,000+ Monthly Orders", description: "Expanding customer base across Mumbai" },
+    { year: "2024", target: "50,000+ Monthly Orders", description: "Expanding customer base across Puducherry" },
     { year: "2025", target: "10 City Presence", description: "Nationwide expansion with 25+ kitchens" },
     { year: "2026", target: "₹100 Cr Revenue", description: "Achieving significant market presence" },
     { year: "2027", target: "International Launch", description: "Expanding to Dubai and Singapore" }
@@ -237,10 +255,10 @@ const FuturePlans = () => {
               menu additions, and exciting developments.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button variant="hero">
+              <Button variant="hero" onClick={handleSubscribeUpdates}>
                 Subscribe to Updates
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" onClick={handleCareerOpportunities}>
                 Career Opportunities
               </Button>
             </div>

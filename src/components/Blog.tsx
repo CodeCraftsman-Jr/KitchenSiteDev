@@ -2,8 +2,26 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Blog = () => {
+  const { toast } = useToast();
+
+  const handleReadMore = (postTitle: string) => {
+    toast({
+      title: "Blog Post",
+      description: `Opening "${postTitle}"...`,
+    });
+    // In a real app, this would navigate to the full blog post
+  };
+
+  const handleViewAllPosts = () => {
+    toast({
+      title: "Blog",
+      description: "Redirecting to all blog posts...",
+    });
+    // In a real app, this would navigate to the blog listing page
+  };
   const blogPosts = [
     {
       id: 1,
@@ -69,7 +87,7 @@ const Blog = () => {
             From Our Kitchen Blog
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Stories, recipes, and insights from our culinary journey. Stay updated with the latest from Spice Kitchen.
+            Stories, recipes, and insights from our culinary journey. Stay updated with the latest from Vasanth's Kitchen.
           </p>
         </div>
 
@@ -101,7 +119,11 @@ const Blog = () => {
                     <span>{post.readTime}</span>
                   </div>
                 </div>
-                <Button variant="ghost" className="w-full group-hover:bg-primary group-hover:text-white transition-all">
+                <Button
+                  variant="ghost"
+                  className="w-full group-hover:bg-primary group-hover:text-white transition-all"
+                  onClick={() => handleReadMore(post.title)}
+                >
                   Read More
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
@@ -111,7 +133,7 @@ const Blog = () => {
         </div>
 
         <div className="text-center mt-12">
-          <Button variant="hero">
+          <Button variant="hero" onClick={handleViewAllPosts}>
             View All Blog Posts
           </Button>
         </div>

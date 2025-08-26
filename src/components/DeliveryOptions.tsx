@@ -1,8 +1,34 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Truck, Clock, MapPin, Phone } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const DeliveryOptions = () => {
+  const { toast } = useToast();
+
+  const handleOrderNow = (platform: string) => {
+    toast({
+      title: "Redirecting...",
+      description: `Opening ${platform} to place your order.`,
+    });
+
+    // Redirect to the respective platform
+    if (platform === "Zomato") {
+      window.open("https://www.zomato.com/puducherry/vasanths-kitchen-auroville", "_blank");
+    } else if (platform === "Swiggy") {
+      window.open("https://www.swiggy.com/city/pondicherry/vasanths-kitchen-kalapet-auroville-rest967996", "_blank");
+    }
+    // For Direct Delivery, keep the existing behavior (just show toast)
+  };
+
+  const handleCallNow = () => {
+    toast({
+      title: "Calling...",
+      description: "Initiating call to +91 9442434269",
+    });
+    // In a real app, this would initiate a phone call
+    window.open('tel:+919442434269');
+  };
   const deliveryOptions = [
     {
       name: "Swiggy",
@@ -58,7 +84,11 @@ const DeliveryOptions = () => {
                     <span>{option.fee}</span>
                   </div>
                 </div>
-                <Button variant="order" className="w-full">
+                <Button
+                  variant="order"
+                  className="w-full"
+                  onClick={() => handleOrderNow(option.name)}
+                >
                   Order Now
                 </Button>
               </CardContent>
@@ -75,9 +105,13 @@ const DeliveryOptions = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <div className="flex items-center gap-2 text-lg">
               <Phone className="h-5 w-5" />
-              <span className="font-semibold">+91 98765 43210</span>
+              <span className="font-semibold">+91 9442434269</span>
             </div>
-            <Button variant="outline" className="bg-white/10 text-white border-white hover:bg-white hover:text-primary">
+            <Button
+              variant="outline"
+              className="bg-white/10 text-white border-white hover:bg-white hover:text-primary"
+              onClick={handleCallNow}
+            >
               Call Now
             </Button>
           </div>

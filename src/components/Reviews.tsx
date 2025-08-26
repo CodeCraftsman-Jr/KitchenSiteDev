@@ -3,16 +3,26 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Star, Quote } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Reviews = () => {
   const [displayedReviews, setDisplayedReviews] = useState(6);
   const [showAll, setShowAll] = useState(false);
+  const { toast } = useToast();
+
+  const handleWriteReview = () => {
+    toast({
+      title: "Write a Review",
+      description: "Redirecting to review form...",
+    });
+    // In a real app, this would open a review form or redirect to a review platform
+  };
 
   // Generate more reviews for demonstration
   const generateReviews = () => {
     const names = ["Priya Sharma", "Rajesh Kumar", "Anita Patel", "Vikram Singh", "Sneha Gupta", "Amit Verma", "Kavya Reddy", "Ravi Mehta", "Pooja Jain", "Arjun Nair", "Divya Shah", "Kiran Patel", "Sanjay Rao", "Meera Iyer", "Rohit Agarwal"];
     const comments = [
-      "Absolutely amazing food! The biryani was perfectly spiced and the delivery was super quick. Best cloud kitchen in Mumbai!",
+      "Absolutely amazing food! The dosas were perfectly crispy and the delivery was super quick. Best South Indian kitchen in Puducherry!",
       "Outstanding butter chicken and excellent service. The food arrived hot and fresh. Highly recommended!",
       "Great variety and authentic flavors. The sweets were especially delicious. Will definitely order again!",
       "Fantastic experience! Quick delivery and incredible taste. The tandoori items are exceptional.",
@@ -136,7 +146,7 @@ const Reviews = () => {
         {/* Add Review Button */}
         <div className="text-center mt-12">
           <p className="text-muted-foreground mb-4">Have you tried our food? Share your experience!</p>
-          <Button variant="hero">
+          <Button variant="hero" onClick={handleWriteReview}>
             Write a Review
           </Button>
         </div>

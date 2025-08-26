@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Phone, 
   Mail, 
@@ -14,40 +15,57 @@ import {
 } from "lucide-react";
 
 const ContactUs = () => {
+  const { toast } = useToast();
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Message Sent!",
+      description: "Thank you for contacting us. We'll get back to you soon.",
+    });
+  };
+
+  const handleChatSupport = () => {
+    toast({
+      title: "Chat Support",
+      description: "Redirecting to our support chat...",
+    });
+    // In a real app, this would open a chat widget or redirect to support
+  };
   const contactMethods = [
     {
       icon: Phone,
       title: "Call Us",
-      primary: "+91 98765 43210",
-      secondary: "+91 87654 32109",
-      action: "tel:+919876543210",
-      available: "24/7 Customer Support",
+      primary: "+91 9442434269",
+      secondary: "Main Line",
+      action: "tel:+919442434269",
+      available: "9:00 AM - 12:00 PM Daily",
       color: "text-green-600"
     },
     {
       icon: Mail,
       title: "Email Us",
-      primary: "orders@spicekitchen.com",
-      secondary: "support@spicekitchen.com",
-      action: "mailto:orders@spicekitchen.com",
+      primary: "orders@vasanthskitchen.com",
+      secondary: "support@vasanthskitchen.com",
+      action: "mailto:orders@vasanthskitchen.com",
       available: "Response within 2 hours",
       color: "text-blue-600"
     },
     {
       icon: MessageCircle,
       title: "WhatsApp",
-      primary: "+91 98765 43210",
+      primary: "+91 9442434269",
       secondary: "Quick Support",
-      action: "https://wa.me/919876543210",
+      action: "https://wa.me/919442434269",
       available: "Instant messaging",
       color: "text-green-500"
     },
     {
       icon: Send,
       title: "Telegram",
-      primary: "@SpiceKitchenSupport",
+      primary: "@VasanthsKitchenSupport",
       secondary: "Live Chat",
-      action: "https://t.me/SpiceKitchenSupport",
+      action: "https://t.me/VasanthsKitchenSupport",
       available: "Real-time assistance",
       color: "text-blue-500"
     }
@@ -55,40 +73,13 @@ const ContactUs = () => {
 
   const branches = [
     {
-      name: "Andheri East - Main Kitchen",
-      address: "Plot No. 15, Food Court Complex, Andheri East, Mumbai - 400069",
-      phone: "+91 98765 43210",
-      email: "andheri@spicekitchen.com",
-      timing: "11:00 AM - 11:00 PM",
+      name: "Chinna Kalapet - Main Kitchen",
+      address: "Plot No: 50, 51 Mettu Street, Chinna Kalapet, Puducherry",
+      phone: "+91 9442434269",
+      email: "main@vasanthskitchen.com",
+      timing: "9:00 AM - 12:00 PM",
       status: "Operational",
-      manager: "Rajesh Kumar"
-    },
-    {
-      name: "Bandra West - Branch",
-      address: "Shop No. 8, Linking Road, Bandra West, Mumbai - 400050",
-      phone: "+91 87654 32109",
-      email: "bandra@spicekitchen.com",
-      timing: "12:00 PM - 10:00 PM",
-      status: "Operational",
-      manager: "Priya Sharma"
-    },
-    {
-      name: "Powai - Branch",
-      address: "Office No. 12, Hiranandani Gardens, Powai, Mumbai - 400076",
-      phone: "+91 76543 21098",
-      email: "powai@spicekitchen.com",
-      timing: "11:30 AM - 10:30 PM",
-      status: "Operational",
-      manager: "Amit Verma"
-    },
-    {
-      name: "Thane - Coming Soon",
-      address: "Ghodbunder Road, Thane West, Mumbai - 400607",
-      phone: "Coming Soon",
-      email: "thane@spicekitchen.com",
-      timing: "Opening April 2024",
-      status: "Under Construction",
-      manager: "TBA"
+      manager: "Vasanth Kumar"
     }
   ];
 
@@ -134,30 +125,30 @@ const ContactUs = () => {
           <Card className="shadow-card">
             <CardContent className="p-8">
               <h3 className="text-2xl font-bold text-primary mb-6">Send us a Message</h3>
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleFormSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-primary mb-2 block">Name</label>
-                    <Input placeholder="Your full name" />
+                    <Input placeholder="Your full name" required />
                   </div>
                   <div>
                     <label className="text-sm font-medium text-primary mb-2 block">Phone</label>
-                    <Input placeholder="Your phone number" />
+                    <Input placeholder="Your phone number" required />
                   </div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-primary mb-2 block">Email</label>
-                  <Input type="email" placeholder="Your email address" />
+                  <Input type="email" placeholder="Your email address" required />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-primary mb-2 block">Subject</label>
-                  <Input placeholder="What is this about?" />
+                  <Input placeholder="What is this about?" required />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-primary mb-2 block">Message</label>
-                  <Textarea placeholder="Tell us how we can help you..." rows={5} />
+                  <Textarea placeholder="Tell us how we can help you..." rows={5} required />
                 </div>
-                <Button variant="hero" className="w-full">
+                <Button type="submit" variant="hero" className="w-full">
                   Send Message
                   <Send className="ml-2 h-4 w-4" />
                 </Button>
@@ -174,28 +165,33 @@ const ContactUs = () => {
                   <Clock className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                   <div>
                     <h4 className="font-semibold text-primary">Operating Hours</h4>
-                    <p className="text-muted-foreground">Monday - Sunday: 11:00 AM - 11:00 PM</p>
-                    <p className="text-sm text-muted-foreground">Late night delivery available</p>
+                    <p className="text-muted-foreground">Monday - Sunday: 9:00 AM - 12:00 PM</p>
+                    <p className="text-sm text-muted-foreground">Fresh breakfast and morning meals</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <MapPin className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                   <div>
                     <h4 className="font-semibold text-primary">Main Kitchen</h4>
-                    <p className="text-muted-foreground">Plot No. 15, Food Court Complex, Andheri East, Mumbai - 400069</p>
+                    <p className="text-muted-foreground">Plot No: 50, 51 Mettu Street, Chinna Kalapet, Puducherry</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <Phone className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                   <div>
                     <h4 className="font-semibold text-primary">Emergency Contact</h4>
-                    <p className="text-muted-foreground">+91 98765 43210 (24/7 Available)</p>
+                    <p className="text-muted-foreground">+91 9442434269 (9:00 AM - 12:00 PM)</p>
                   </div>
                 </div>
                 <div className="bg-cream p-4 rounded-lg">
                   <h4 className="font-semibold text-primary mb-2">Need Immediate Help?</h4>
                   <p className="text-sm text-muted-foreground mb-3">For urgent order issues or complaints</p>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={handleChatSupport}
+                  >
                     <MessageCircle className="mr-2 h-4 w-4" />
                     Chat with Support
                   </Button>

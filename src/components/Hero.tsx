@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Star, Award, Clock, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-image.jpg";
 
 const Hero = () => {
@@ -60,12 +61,21 @@ const Hero = () => {
           
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="hero" size="lg" className="text-lg px-8 py-4 h-auto">
+            <Button
+              variant="hero"
+              size="lg"
+              className="text-lg px-8 py-4 h-auto"
+              onClick={() => {
+                document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
               Order Now
             </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-4 h-auto bg-white/10 text-white border-white hover:bg-white hover:text-primary">
-              View Menu
-            </Button>
+            <Link to="/menu">
+              <Button variant="outline" size="lg" className="text-lg px-8 py-4 h-auto bg-white/10 text-white border-white hover:bg-white hover:text-primary">
+                View Menu
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
