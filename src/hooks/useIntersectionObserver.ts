@@ -82,27 +82,27 @@ export const useProfilePhotoAnimation = (
   const getAnimationClasses = () => {
     if (!shouldAnimate) return 'opacity-0';
 
-    const baseClasses = 'opacity-100 profile-hover-effect';
-    
+    const baseClasses = 'opacity-100';
+
     if (animationType === 'staff') {
-      // Rotate through different cook-themed animations for staff
+      // Enhanced cook-themed animations for staff with advanced effects
       const cookAnimations = [
-        'animate-fade-in-up animate-pan-flip',
-        'animate-scale-in animate-stir-motion',
-        'animate-slide-in-left animate-cooking-bounce',
-        'animate-fade-in-up animate-chef-wiggle'
+        'animate-fade-in-up animate-pan-flip-3d profile-sparkles sizzling-effect',
+        'animate-scale-in animate-stir-motion-complex gradient-overlay',
+        'animate-slide-in-left animate-cooking-bounce-3d profile-sparkles',
+        'animate-fade-in-up animate-chef-wiggle-enhanced sizzling-effect'
       ];
       const randomAnimation = cookAnimations[Math.floor(Math.random() * cookAnimations.length)];
-      return `${baseClasses} ${randomAnimation} animate-glow-pulse`;
+      return `${baseClasses} ${randomAnimation} enhanced-profile floating-card`;
     } else {
-      // Simpler animations for user avatars
+      // Enhanced animations for user avatars with subtle effects
       const userAnimations = [
-        'animate-fade-in-up',
-        'animate-scale-in',
-        'animate-slide-in-left'
+        'animate-fade-in-up gradient-overlay',
+        'animate-scale-in profile-sparkles',
+        'animate-slide-in-left floating-card'
       ];
       const randomAnimation = userAnimations[Math.floor(Math.random() * userAnimations.length)];
-      return `${baseClasses} ${randomAnimation}`;
+      return `${baseClasses} ${randomAnimation} enhanced-profile`;
     }
   };
 

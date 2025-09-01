@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Phone, MapPin } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import VasanthsKitchenLogo from "@/components/ui/logo";
 
 const Header = () => {
   const location = useLocation();
@@ -10,8 +11,12 @@ const Header = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Link to="/" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors">
-              Vasanth's Kitchen
+            <Link
+              to="/"
+              className="hover:opacity-80 transition-opacity duration-300"
+              aria-label="Vasanth's Kitchen - Home"
+            >
+              <VasanthsKitchenLogo variant="full" size="md" />
             </Link>
             <div className="hidden md:flex items-center space-x-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">

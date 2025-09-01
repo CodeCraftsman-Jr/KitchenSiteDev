@@ -1,0 +1,48 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgGradient" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#D97706" stop-opacity="0.1" />
+    </radialGradient>
+    <linearGradient id="panGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#92400E" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <linearGradient id="flameGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#D97706" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#bgGradient)" stroke="#D97706" stroke-width="2"/>
+  
+  <!-- Traditional South Indian Dosa Pan -->
+  <ellipse cx="50" cy="45" rx="25" ry="8" fill="url(#panGradient)" />
+  <ellipse cx="50" cy="43" rx="25" ry="8" fill="#92400E" opacity="0.3" />
+  
+  <!-- Pan Handle -->
+  <rect x="75" y="42" width="15" height="3" rx="1.5" fill="#92400E" />
+  <circle cx="92" cy="43.5" r="2" fill="#D97706" />
+  
+  <!-- Cooking Flames -->
+  <path 
+    d="M35 55 Q37 50 35 48 Q38 52 40 48 Q42 52 45 48 Q47 52 50 48 Q52 52 55 48 Q57 52 60 48 Q62 52 65 48 Q67 52 65 55" 
+    fill="url(#flameGradient)" 
+    opacity="0.8"
+  />
+  
+  <!-- Steam/Aroma Lines -->
+  <path d="M40 35 Q42 30 40 28" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+  <path d="M50 33 Q52 28 50 26" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+  <path d="M60 35 Q62 30 60 28" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+  
+  <!-- Decorative Spice Dots -->
+  <circle cx="25" cy="25" r="1.5" fill="#D97706" opacity="0.7" />
+  <circle cx="75" cy="25" r="1.5" fill="#F59E0B" opacity="0.7" />
+  <circle cx="25" cy="75" r="1.5" fill="#92400E" opacity="0.7" />
+  <circle cx="75" cy="75" r="1.5" fill="#D97706" opacity="0.7" />
+  
+  <!-- Traditional Pattern Border -->
+  <circle cx="50" cy="50" r="46" fill="none" stroke="#D97706" stroke-width="1" stroke-dasharray="3,2" opacity="0.5" />
+</svg>

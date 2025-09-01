@@ -109,7 +109,7 @@ const Reviews = () => {
         </div>
         
         {/* Reviews Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto grid-container-animated profile-container">
           {reviewsToShow.map((review, index) => {
             const ReviewCard = () => {
               const { elementRef, animationClasses } = useProfilePhotoAnimation('user', index * 150);
@@ -117,12 +117,18 @@ const Reviews = () => {
               return (
                 <Card
                   ref={elementRef}
-                  className="shadow-card hover:shadow-warm transition-all duration-300"
+                  className="shadow-card hover:shadow-warm transition-all duration-300 stagger-item"
+                  tabIndex={0}
+                  role="article"
+                  aria-label={`Review by ${review.name}`}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4 mb-4">
                       <Avatar className={`h-16 w-16 transition-all duration-500 ${animationClasses}`}>
-                        <AvatarFallback className="bg-primary text-white font-semibold text-lg">
+                        <AvatarFallback
+                          className="bg-primary text-white font-semibold text-lg"
+                          aria-label={`Avatar for ${review.name}`}
+                        >
                           {review.name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
