@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Star, Quote } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useProfilePhotoAnimation } from "@/hooks/useIntersectionObserver";
 
 const Reviews = () => {
   const [displayedReviews, setDisplayedReviews] = useState(6);
@@ -109,15 +110,22 @@ const Reviews = () => {
         
         {/* Reviews Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {reviewsToShow.map((review) => (
-            <Card key={review.id} className="shadow-card hover:shadow-warm transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4 mb-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-primary text-white font-semibold">
-                      {review.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
+          {reviewsToShow.map((review, index) => {
+            const ReviewCard = () => {
+              const { elementRef, animationClasses } = useProfilePhotoAnimation('user', index * 150);
+
+              return (
+                <Card
+                  ref={elementRef}
+                  className="shadow-card hover:shadow-warm transition-all duration-300"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4 mb-4">
+                      <Avatar className={`h-16 w-16 transition-all duration-500 ${animationClasses}`}>
+                        <AvatarFallback className="bg-primary text-white font-semibold text-lg">
+                          {review.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="font-semibold text-primary">{review.name}</h4>
@@ -134,13 +142,17 @@ const Reviews = () => {
                   </div>
                 </div>
                 
-                <div className="relative">
-                  <Quote className="absolute -top-2 -left-2 h-8 w-8 text-primary/20" />
-                  <p className="text-muted-foreground pl-6 italic">"{review.comment}"</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                      <div className="relative">
+                        <Quote className="absolute -top-2 -left-2 h-8 w-8 text-primary/20" />
+                        <p className="text-muted-foreground pl-6 italic">"{review.comment}"</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              };
+
+              return <ReviewCard key={review.id} />;
+            })}
         </div>
         
         {/* Load More Reviews */}

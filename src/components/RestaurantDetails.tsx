@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, MapPin, Award, Users, Utensils, Shield } from "lucide-react";
+import { useProfilePhotoAnimation } from "@/hooks/useIntersectionObserver";
 
 const RestaurantDetails = () => {
   const highlights = [
@@ -162,23 +163,35 @@ const RestaurantDetails = () => {
         <div>
           <h3 className="text-3xl font-bold text-primary text-center mb-12">Meet Our Team</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto">
-            {staff.map((member) => (
-              <Card key={member.name} className="text-center shadow-card hover:shadow-warm transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-4 border-2 border-primary">
-                    <img
-                      src={member.image}
-                      alt={member.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <h4 className="text-lg font-bold text-primary mb-1">{member.name}</h4>
-                  <p className="text-warm-orange font-semibold mb-1">{member.role}</p>
-                  <p className="text-muted-foreground text-sm mb-2">{member.experience}</p>
-                  <Badge variant="secondary" className="text-xs">{member.specialty}</Badge>
-                </CardContent>
-              </Card>
-            ))}
+            {staff.map((member, index) => {
+              const StaffMemberCard = () => {
+                const { elementRef, animationClasses } = useProfilePhotoAnimation('staff', index * 200);
+
+                return (
+                  <Card
+                    ref={elementRef}
+                    className="text-center shadow-card hover:shadow-warm transition-all duration-300"
+                  >
+                    <CardContent className="p-6">
+                      <div className="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4 border-3 border-primary relative">
+                        <img
+                          src={member.image}
+                          alt={member.name}
+                          className={`w-full h-full object-cover transition-all duration-500 ${animationClasses}`}
+                        />
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-t from-primary/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                      <h4 className="text-lg font-bold text-primary mb-1">{member.name}</h4>
+                      <p className="text-warm-orange font-semibold mb-1">{member.role}</p>
+                      <p className="text-muted-foreground text-sm mb-2">{member.experience}</p>
+                      <Badge variant="secondary" className="text-xs">{member.specialty}</Badge>
+                    </CardContent>
+                  </Card>
+                );
+              };
+
+              return <StaffMemberCard key={member.name} />;
+            })}
           </div>
         </div>
       </div>
