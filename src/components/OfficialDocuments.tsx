@@ -7,29 +7,68 @@ import { useToast } from "@/hooks/use-toast";
 const OfficialDocuments = () => {
   const { toast } = useToast();
 
-  const handleDownload = (docName: string) => {
-    toast({
-      title: "Download Started",
-      description: `Downloading ${docName}...`,
-    });
-    // In a real app, this would trigger the actual download
+  const handleDownload = (docPath: string, docName: string) => {
+    try {
+      const link = document.createElement('a');
+      link.href = docPath;
+      link.download = docName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Download Started",
+        description: `Downloading ${docName}...`,
+      });
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "Unable to download the document. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleViewExternal = (docName: string) => {
+  const handleViewExternal = (docPath: string, docName: string) => {
+    try {
+      window.open(docPath, '_blank');
+      toast({
+        title: "Opening Document",
+        description: `Opening ${docName} in new window...`,
+      });
+    } catch (error) {
+      toast({
+        title: "View Failed",
+        description: "Unable to open the document. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRequestVerification = () => {
+    const email = "vasanthan.ngc@gmail.com";
+    const subject = "Document Verification Request - Vasanth's Kitchen";
+    const body = "Dear Vasanth's Kitchen Team,\n\nI would like to request verification of your official documents and certifications.\n\nPlease provide verification for:\n- FSSAI License\n- GST Registration\n- Fire Safety Certificate\n- ISO 22000 Certification\n\nThank you.";
+
+    const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoLink;
+
     toast({
-      title: "Opening Document",
-      description: `Opening ${docName} in new window...`,
+      title: "Verification Request",
+      description: "Opening email client to send verification request...",
     });
-    // In a real app, this would open the document in a new window
   };
   const documents = [
     {
       id: 1,
-      title: "FSSAI License",
+      title: "FSSAI Certificate",
       description: "Food Safety and Standards Authority of India License",
       number: "10019022001234",
       status: "Active",
       validUntil: "March 2025",
+      issueDate: "March 2024",
+      renewalHistory: ["March 2023", "March 2022", "March 2021"],
+      filePath: "/src/assets/documents/Fssai/2025 licence.pdf",
       icon: Shield,
       color: "text-green-600"
     },
@@ -37,61 +76,50 @@ const OfficialDocuments = () => {
       id: 2,
       title: "GST Registration",
       description: "Goods and Services Tax Registration Certificate",
-      number: "27AABCU9603R1ZM",
+      number: "33AABCU9603R1ZV",
       status: "Active",
       validUntil: "Ongoing",
+      issueDate: "January 2024",
+      renewalHistory: ["Annual filing completed"],
+      filePath: "/src/assets/documents/GST_Registration.pdf",
       icon: FileText,
       color: "text-blue-600"
     },
     {
       id: 3,
-      title: "Trade License",
-      description: "Municipal Corporation Trade License",
-      number: "TL/2024/12345",
-      status: "Active",
-      validUntil: "December 2024",
-      icon: Award,
-      color: "text-purple-600"
-    },
-    {
-      id: 4,
       title: "Fire Safety Certificate",
       description: "Fire Department Safety Clearance Certificate",
       number: "FSC/2024/0789",
       status: "Active",
       validUntil: "January 2025",
+      issueDate: "January 2024",
+      renewalHistory: ["January 2023", "January 2022"],
+      filePath: "/src/assets/documents/Fire_Safety_Certificate.pdf",
       icon: Shield,
       color: "text-red-600"
     },
     {
-      id: 5,
+      id: 4,
       title: "ISO 22000 Certification",
       description: "Food Safety Management System Certification",
       number: "ISO22000/2024/456",
       status: "Active",
       validUntil: "June 2025",
+      issueDate: "June 2024",
+      renewalHistory: ["June 2021 (3-year certification)"],
+      filePath: "/src/assets/documents/ISO_22000_Certificate.pdf",
       icon: Award,
       color: "text-indigo-600"
-    },
-    {
-      id: 6,
-      title: "Halal Certification",
-      description: "Halal Food Certification Authority",
-      number: "HC/2024/789",
-      status: "Active",
-      validUntil: "August 2024",
-      icon: Shield,
-      color: "text-emerald-600"
     }
   ];
 
   const certifications = [
-    "FSSAI Licensed Kitchen Facility",
-    "ISO 22000:2018 Food Safety Management",
-    "HACCP Certified Processes",
-    "Halal Certified Kitchen",
+    "FSSAI Licensed Kitchen Facility - Valid until March 2025",
+    "ISO 22000:2018 Food Safety Management System",
+    "GST Registered Business - Compliant with Tax Regulations",
+    "Fire Safety Clearance - Annual Inspections Completed",
     "Regular Health Department Inspections",
-    "Comprehensive Insurance Coverage"
+    "Student-Focused Healthy Food Standards"
   ];
 
   return (
@@ -130,8 +158,22 @@ const OfficialDocuments = () => {
                     <span className="font-mono text-primary">{doc.number}</span>
                   </div>
                   <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Issue Date:</span>
+                    <span className="font-semibold">{doc.issueDate}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Valid Until:</span>
                     <span className="font-semibold">{doc.validUntil}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Renewal History:</span>
+                    <div className="mt-1">
+                      {doc.renewalHistory.map((renewal, index) => (
+                        <div key={index} className="text-xs text-gray-600 ml-2">
+                          • {renewal}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -140,15 +182,15 @@ const OfficialDocuments = () => {
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => handleDownload(doc.name)}
+                    onClick={() => handleDownload(doc.filePath, `${doc.title}.pdf`)}
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Download
+                    Download PDF
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleViewExternal(doc.name)}
+                    onClick={() => handleViewExternal(doc.filePath, doc.title)}
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
@@ -174,7 +216,7 @@ const OfficialDocuments = () => {
               All documents are verified and maintained as per regulatory requirements. 
               Last updated: March 2024
             </p>
-            <Button variant="hero">
+            <Button variant="hero" onClick={handleRequestVerification}>
               Request Document Verification
             </Button>
           </div>

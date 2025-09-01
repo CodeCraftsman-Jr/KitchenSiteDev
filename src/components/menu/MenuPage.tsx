@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import Header from '@/components/Header';
+import Cart from '@/components/Cart';
+import { useCart } from '@/contexts/CartContext';
+import { useToast } from '@/hooks/use-toast';
 import {
   Star,
   Clock,
@@ -23,7 +26,17 @@ export const MenuPage: React.FC = () => {
     category: undefined,
   });
 
-  const [cart, setCart] = useState<MenuItem[]>([]);
+  const {
+    cartItems,
+    addToCart,
+    updateQuantity,
+    removeFromCart,
+    getTotalAmount,
+    getTotalItems,
+    isCartOpen,
+    setIsCartOpen
+  } = useCart();
+  const { toast } = useToast();
 
   // Filter menu items based on current filters
   const filteredCategories = useMemo(() => {
@@ -55,12 +68,21 @@ export const MenuPage: React.FC = () => {
   }, [filters]);
 
   const handleAddToCart = (item: MenuItem) => {
-    setCart(prev => [...prev, item]);
-    // You can add toast notification here
-    console.log(`Added ${item.name} to cart`);
+    addToCart(item);
+    toast({
+      title: "Added to Cart",
+      description: `${item.name} has been added to your cart.`,
+    });
   };
 
-  const totalCartValue = cart.reduce((sum, item) => sum + item.price, 0);
+  const handleCheckout = () => {
+    setIsCartOpen(false);
+    // Navigate to checkout page or show checkout modal
+    toast({
+      title: "Proceeding to Checkout",
+      description: "Redirecting to checkout page...",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
@@ -191,14 +213,27 @@ export const MenuPage: React.FC = () => {
       </div>
 
       {/* Floating Cart Button */}
-      {cart.length > 0 && (
+      {getTotalItems() > 0 && (
         <div className="fixed bottom-6 right-6 z-50">
-          <Button className="bg-orange-500 hover:bg-orange-600 text-white shadow-lg rounded-full px-6 py-3">
+          <Button
+            className="bg-orange-500 hover:bg-orange-600 text-white shadow-lg rounded-full px-6 py-3"
+            onClick={() => setIsCartOpen(true)}
+          >
             <ShoppingCart className="w-5 h-5 mr-2" />
-            {cart.length} items • ₹{totalCartValue}
+            {getTotalItems()} items • ₹{getTotalAmount()}
           </Button>
         </div>
       )}
+
+      {/* Cart Modal */}
+      <Cart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cartItems={cartItems}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeFromCart}
+        onCheckout={handleCheckout}
+      />
     </div>
   );
 };

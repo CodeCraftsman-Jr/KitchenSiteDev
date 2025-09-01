@@ -19,41 +19,44 @@ const FuturePlans = () => {
   const { toast } = useToast();
 
   const handleSubscribeUpdates = () => {
+    // Open community link
+    const communityLink = "https://t.me/vasanthskitchencommunity";
+    window.open(communityLink, '_blank');
+
     toast({
-      title: "Subscribe to Updates",
-      description: "Redirecting to subscription form...",
+      title: "Join Our Community",
+      description: "Opening Telegram community for updates and discussions...",
     });
-    // In a real app, this would open a subscription form
   };
 
   const handleCareerOpportunities = () => {
     toast({
       title: "Career Opportunities",
-      description: "Redirecting to careers page...",
+      description: "Will be hiring soon! Stay tuned for exciting opportunities.",
+      duration: 4000
     });
-    // In a real app, this would redirect to a careers page
   };
   const expansionPlans = [
     {
-      title: "New Branch - Thane",
-      description: "Opening our fourth branch in Thane West with expanded seating and dine-in facilities",
-      timeline: "April 2024",
-      status: "In Progress",
+      title: "Coimbatore Expansion",
+      description: "Opening cloud kitchen in Coimbatore focusing on student areas and residential zones",
+      timeline: "2025",
+      status: "Planning",
       icon: MapPin,
       color: "text-green-600"
     },
     {
-      title: "Pune Expansion",
-      description: "Expanding to Pune with two cloud kitchens in Koregaon Park and Hinjewadi",
-      timeline: "June 2024",
-      status: "Planning",
+      title: "Chennai Launch",
+      description: "Strategic entry into Chennai market with focus on student communities and working professionals",
+      timeline: "2027",
+      status: "Future Planning",
       icon: TrendingUp,
       color: "text-blue-600"
     },
     {
-      title: "Delhi NCR Launch",
-      description: "Major expansion to Delhi NCR with 5 strategic locations across Gurgaon and Noida",
-      timeline: "September 2024",
+      title: "Villupuram Launch",
+      description: "Expanding to Villupuram to serve the local community with authentic home-style food",
+      timeline: "2026",
       status: "Research",
       icon: Target,
       color: "text-purple-600"
@@ -115,10 +118,10 @@ const FuturePlans = () => {
   ];
 
   const milestones = [
-    { year: "2024", target: "50,000+ Monthly Orders", description: "Expanding customer base across Puducherry" },
-    { year: "2025", target: "10 City Presence", description: "Nationwide expansion with 25+ kitchens" },
-    { year: "2026", target: "₹100 Cr Revenue", description: "Achieving significant market presence" },
-    { year: "2027", target: "International Launch", description: "Expanding to Dubai and Singapore" }
+    { year: "2024", target: "Reached over 10,000+ customers", description: "Growing customer base in Pondicherry" },
+    { year: "2025", target: "Increase menu items", description: "Expanding variety of home-style dishes" },
+    { year: "2026", target: "2nd branch in White Town", description: "Opening second location by end of 2026" },
+    { year: "2027", target: "Chennai branch", description: "Major city expansion to serve more students" }
   ];
 
   const getStatusColor = (status: string) => {
@@ -204,34 +207,7 @@ const FuturePlans = () => {
           </div>
         </div>
 
-        {/* Menu Innovations */}
-        <div className="mb-16">
-          <h3 className="text-3xl font-bold text-primary text-center mb-12">Menu Innovations</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {menuInnovations.map((menu, index) => (
-              <Card key={index} className="shadow-card hover:shadow-warm transition-all duration-300 group">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className={`w-12 h-12 rounded-lg bg-gradient-warm flex items-center justify-center ${menu.color}`}>
-                      <menu.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-xl font-bold text-primary mb-2">{menu.title}</h4>
-                      <Badge className={getStatusColor(menu.status)}>
-                        {menu.status}
-                      </Badge>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground mb-4">{menu.description}</p>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-primary" />
-                    <span className="font-semibold text-primary">Launch: {menu.timeline}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+
 
         {/* Milestones Timeline */}
         <div className="bg-background rounded-2xl p-8 shadow-card">
@@ -251,15 +227,15 @@ const FuturePlans = () => {
           <div className="text-center mt-12">
             <h4 className="text-xl font-bold text-primary mb-4">Join Our Journey</h4>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Be part of our growth story! Follow us on social media for the latest updates on new locations, 
-              menu additions, and exciting developments.
+              Be part of our growth story! Join our community for the latest updates on new locations,
+              menu additions, and exciting developments. Connect with fellow food lovers and get exclusive updates.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button variant="hero" onClick={handleSubscribeUpdates}>
-                Subscribe to Updates
+                Join Community
               </Button>
               <Button variant="outline" onClick={handleCareerOpportunities}>
-                Career Opportunities
+                Will be hiring soon
               </Button>
             </div>
           </div>

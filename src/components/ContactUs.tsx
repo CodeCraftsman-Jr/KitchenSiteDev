@@ -88,9 +88,9 @@ const ContactUs = () => {
     {
       icon: Mail,
       title: "Email Us",
-      primary: "orders@vasanthskitchen.com",
-      secondary: "support@vasanthskitchen.com",
-      action: "mailto:orders@vasanthskitchen.com",
+      primary: "vasanthan.ngc@gmail.com",
+      secondary: "Business Inquiries",
+      action: "mailto:vasanthan.ngc@gmail.com",
       available: "Response within 2 hours",
       color: "text-blue-600"
     },
@@ -106,9 +106,9 @@ const ContactUs = () => {
     {
       icon: Send,
       title: "Telegram",
-      primary: "@VasanthsKitchenSupport",
+      primary: "vasanthan.ngc@gmail.com",
       secondary: "Live Chat",
-      action: "https://t.me/VasanthsKitchenSupport",
+      action: "mailto:vasanthan.ngc@gmail.com",
       available: "Real-time assistance",
       color: "text-blue-500"
     }
@@ -119,10 +119,19 @@ const ContactUs = () => {
       name: "Chinna Kalapet - Main Kitchen",
       address: "Plot No: 50, 51 Mettu Street, Chinna Kalapet, Puducherry",
       phone: "+91 9442434269",
-      email: "main@vasanthskitchen.com",
+      email: "vasanthan.ngc@gmail.com",
       timing: "9:00 AM - 12:00 PM",
       status: "Operational",
       manager: "Vasanth Kumar"
+    },
+    {
+      name: "Coming Soon - White Town Pondicherry",
+      address: "15, Beach MG Road, White Town, Puducherry - 605001",
+      phone: "+91 9442434269",
+      email: "vasanthan.ngc@gmail.com",
+      timing: "Opening 2026 End",
+      status: "Coming Soon",
+      manager: "To be announced"
     }
   ];
 

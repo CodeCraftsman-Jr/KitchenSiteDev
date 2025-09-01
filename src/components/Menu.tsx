@@ -5,13 +5,14 @@ import { Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/contexts/CartContext";
 import biryaniImage from "@/assets/biryani.jpg";
 import butterChickenImage from "@/assets/butter-chicken.jpg";
 import sweetsImage from "@/assets/sweets.jpg";
 
 const Menu = () => {
   const [activeCategory, setActiveCategory] = useState("All Items");
-  const [cart, setCart] = useState<any[]>([]);
+  const { addToCart, getTotalItems } = useCart();
   const { toast } = useToast();
   const menuItems = [
     {
@@ -60,7 +61,7 @@ const Menu = () => {
   };
 
   const handleAddToCart = (item: any) => {
-    setCart(prev => [...prev, item]);
+    addToCart(item);
     toast({
       title: "Added to Cart",
       description: `${item.name} has been added to your cart.`,
@@ -143,11 +144,11 @@ const Menu = () => {
         </div>
 
         {/* Cart Indicator */}
-        {cart.length > 0 && (
+        {getTotalItems() > 0 && (
           <div className="fixed bottom-6 right-6 z-50">
             <div className="bg-warm-orange text-white px-4 py-2 rounded-full shadow-lg">
               <span className="font-medium">
-                Cart: {cart.length} item{cart.length !== 1 ? 's' : ''}
+                Cart: {getTotalItems()} item{getTotalItems() !== 1 ? 's' : ''}
               </span>
             </div>
           </div>

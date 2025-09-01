@@ -4,33 +4,47 @@ import { Clock, MapPin, Award, Users, Utensils, Shield } from "lucide-react";
 
 const RestaurantDetails = () => {
   const highlights = [
-    { icon: Award, title: "Award Winning", description: "50+ culinary awards" },
-    { icon: Users, title: "Expert Chefs", description: "15+ years experience" },
-    { icon: Utensils, title: "Fresh Ingredients", description: "Daily sourced produce" },
+    { icon: Users, title: "Student Focused", description: "Healthy meals for students" },
+    { icon: Award, title: "Young Entrepreneur", description: "19-year-old founder" },
+    { icon: Utensils, title: "Home-Style Cooking", description: "Traditional family recipes" },
     { icon: Shield, title: "Food Safety", description: "FSSAI certified kitchen" }
   ];
 
   const staff = [
     {
-      name: "Chef Ramesh Kumar",
-      role: "Head Chef",
-      experience: "18 years",
-      specialty: "North Indian Cuisine",
-      initials: "RK"
+      name: "Vasanthan",
+      role: "Owner",
+      experience: "Founder & Student Entrepreneur",
+      specialty: "Business Operations",
+      image: "/src/assets/staff/owner.JPG"
     },
     {
-      name: "Priya Mehta",
-      role: "Sous Chef",
-      experience: "12 years", 
-      specialty: "South Indian Delicacies",
-      initials: "PM"
+      name: "Kitchen Manager",
+      role: "Manager",
+      experience: "Operations Management",
+      specialty: "Quality Control & Coordination",
+      image: "/src/assets/staff/Manager.jpg"
     },
     {
-      name: "Arjun Singh",
-      role: "Kitchen Manager",
-      experience: "10 years",
-      specialty: "Operations & Quality",
-      initials: "AS"
+      name: "Head Cook",
+      role: "Cook",
+      experience: "Traditional South Indian Cuisine",
+      specialty: "Dosa & Idli Specialist",
+      image: "/src/assets/staff/cook.jpg"
+    },
+    {
+      name: "Kitchen Staff",
+      role: "Staff",
+      experience: "Food Preparation & Service",
+      specialty: "Customer Service",
+      image: "/src/assets/staff/staff.jpg"
+    },
+    {
+      name: "Assistant Cook",
+      role: "Assistant Cook",
+      experience: "Food Preparation Support",
+      specialty: "Ingredient Preparation",
+      image: "/src/assets/staff/assistant cook.jpg"
     }
   ];
 
@@ -43,9 +57,7 @@ const RestaurantDetails = () => {
             Our Story & Heritage
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-            Founded with a passion for authentic South Indian cuisine, Vasanth's Kitchen brings traditional
-            flavors and home-style cooking to Puducherry. We focus entirely on what matters most -
-            creating exceptional food with fresh ingredients and time-honored recipes passed down through generations.
+            Vasanth's Kitchen was founded with a passion to serve healthy home-style foods which mainly focuses on students. As myself, I am a 19-year-old student and entrepreneur who started this business at a young age during my college days to solve the problems which I faced. This is the first step I took with the efforts I made. I had opened up this cloud kitchen and will do more in the future. Hope everyone does support me as you usually do. Thank you, Vasanthan From Pondicherry (Owner of Vasanth's Kitchen) - one important thing, all these can't be achieved without my parents' support (Elumalai (Dad) - Staff At Pondicherry University, Abirami (Mom))
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
@@ -149,17 +161,21 @@ const RestaurantDetails = () => {
         {/* Staff Details */}
         <div>
           <h3 className="text-3xl font-bold text-primary text-center mb-12">Meet Our Team</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto">
             {staff.map((member) => (
               <Card key={member.name} className="text-center shadow-card hover:shadow-warm transition-all duration-300">
-                <CardContent className="p-8">
-                  <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
-                    {member.initials}
+                <CardContent className="p-6">
+                  <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-4 border-2 border-primary">
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <h4 className="text-xl font-bold text-primary mb-2">{member.name}</h4>
+                  <h4 className="text-lg font-bold text-primary mb-1">{member.name}</h4>
                   <p className="text-warm-orange font-semibold mb-1">{member.role}</p>
-                  <p className="text-muted-foreground mb-2">{member.experience} experience</p>
-                  <Badge variant="secondary">{member.specialty}</Badge>
+                  <p className="text-muted-foreground text-sm mb-2">{member.experience}</p>
+                  <Badge variant="secondary" className="text-xs">{member.specialty}</Badge>
                 </CardContent>
               </Card>
             ))}
