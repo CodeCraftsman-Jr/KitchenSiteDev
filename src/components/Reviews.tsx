@@ -2,9 +2,12 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Star, Quote } from "lucide-react";
+import { Star, Quote, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProfilePhotoAnimation } from "@/hooks/useIntersectionObserver";
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/services/api';
+import AppwriteImage from "@/components/AppwriteImage";
 
 const Reviews = () => {
   const [displayedReviews, setDisplayedReviews] = useState(6);
@@ -19,52 +22,11 @@ const Reviews = () => {
     // In a real app, this would open a review form or redirect to a review platform
   };
 
-  // Generate realistic reviews based on actual menu items
-  const generateReviews = () => {
-    const names = ["Priya Sharma", "Rajesh Kumar", "Anita Patel", "Vikram Singh", "Sneha Gupta", "Amit Verma", "Kavya Reddy", "Ravi Mehta", "Pooja Jain", "Arjun Nair", "Divya Shah", "Kiran Patel", "Sanjay Rao", "Meera Iyer", "Rohit Agarwal", "Deepika Nair", "Suresh Babu", "Lakshmi Devi", "Arun Kumar", "Nisha Reddy"];
-    const menuBasedComments = [
-      "The Plain Idli was so soft and fluffy! Perfect with the sambar and chutneys. Authentic South Indian taste.",
-      "Ordered the Ghee Idli and it was absolutely divine. The aroma of ghee made it so special. Will order again!",
-      "Plain Dosa was crispy and perfectly made. The coconut chutney was fresh and delicious.",
-      "Masala Dosa was amazing! The potato filling was well-spiced and the dosa was golden brown. Loved it!",
-      "Curd Rice was so comforting and perfectly seasoned. Reminded me of home-cooked food.",
-      "Lemon Rice had the perfect tangy flavor. Great for a light meal. Packaging was excellent too.",
-      "Chicken 65 was crispy and spicy - exactly how it should be! Fresh and hot delivery.",
-      "Rose Milk was refreshing and had the perfect sweetness. Great quality for the price.",
-      "Plain Uttapam was thick and fluffy. Served with good quality sambar and chutneys.",
-      "Onion Uttapam had generous onion toppings. Cooked to perfection and very tasty.",
-      "Tea was perfectly brewed with the right amount of milk and sugar. Authentic taste.",
-      "Boost drink was creamy and chocolatey. Kids loved it! Good portion size.",
-      "The Fried Idli was a unique twist - crispy outside, soft inside. Very innovative!",
-      "Paper Roast Dosa was huge and crispy! Great value for money. Highly recommended.",
-      "Tomato Rice was flavorful and had fresh tomato taste. Perfect comfort food.",
-      "Badam Milk was rich and creamy. You can taste the real almonds. Premium quality.",
-      "Mini Idlis were cute and perfectly steamed. Great for kids and easy to eat.",
-      "Ghee Dosa had the perfect amount of ghee. Crispy and aromatic. Excellent!",
-      "The sambar quality is outstanding - authentic South Indian taste with perfect spices.",
-      "Coconut chutney was fresh and creamy. You can tell they use fresh coconuts.",
-      "Delivery was quick and food was still hot. Great packaging keeps everything fresh.",
-      "As a student, this place is perfect - affordable, tasty, and reminds me of home food.",
-      "Being from Tamil Nadu, I can say this is authentic South Indian cuisine. Highly recommended!",
-      "The portion sizes are generous and the taste is consistent every time I order."
-    ];
-    const dates = ["2 hours ago", "5 hours ago", "1 day ago", "2 days ago", "3 days ago", "1 week ago", "2 weeks ago", "3 weeks ago", "1 month ago"];
+  const { data: reviews = [], isLoading } = useQuery({
+    queryKey: ['reviews'],
+    queryFn: api.getReviews
+  });
 
-    const allReviews = [];
-    for (let i = 1; i <= 450; i++) {
-      allReviews.push({
-        id: i,
-        name: names[Math.floor(Math.random() * names.length)],
-        rating: Math.random() > 0.1 ? 5 : Math.random() > 0.3 ? 4 : 3,
-        comment: menuBasedComments[Math.floor(Math.random() * menuBasedComments.length)],
-        date: dates[Math.floor(Math.random() * dates.length)],
-        verified: Math.random() > 0.15
-      });
-    }
-    return allReviews;
-  };
-
-  const reviews = generateReviews();
   const reviewsToShow = showAll ? reviews : reviews.slice(0, displayedReviews);
 
   const loadMoreReviews = () => {
@@ -109,57 +71,70 @@ const Reviews = () => {
         </div>
         
         {/* Reviews Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto grid-container-animated profile-container">
-          {reviewsToShow.map((review, index) => {
-            const ReviewCard = () => {
-              const { elementRef, animationClasses } = useProfilePhotoAnimation('user', index * 150);
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto grid-container-animated profile-container">
+            {reviewsToShow.map((review, index) => {
+              const ReviewCard = () => {
+                const { elementRef, animationClasses } = useProfilePhotoAnimation('user', index * 150);
 
-              return (
-                <Card
-                  ref={elementRef}
-                  className="shadow-card hover:shadow-warm transition-all duration-300 stagger-item"
-                  tabIndex={0}
-                  role="article"
-                  aria-label={`Review by ${review.name}`}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4 mb-4">
-                      <Avatar className={`h-16 w-16 transition-all duration-500 ${animationClasses}`}>
-                        <AvatarFallback
-                          className="bg-primary text-white font-semibold text-lg"
-                          aria-label={`Avatar for ${review.name}`}
-                        >
-                          {review.name.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold text-primary">{review.name}</h4>
-                      {review.verified && (
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                          Verified
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex">{renderStars(review.rating)}</div>
-                      <span className="text-sm text-muted-foreground">{review.date}</span>
+                return (
+                  <Card
+                    ref={elementRef}
+                    className="shadow-card hover:shadow-warm transition-all duration-300 stagger-item"
+                    tabIndex={0}
+                    role="article"
+                    aria-label={`Review by ${review.name}`}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4 mb-4">
+                        <Avatar className={`h-16 w-16 transition-all duration-500 ${animationClasses}`}>
+                          <AppwriteImage
+                            fileId={review.avatar_file_id}
+                            alt={review.name}
+                            className="w-full h-full object-cover"
+                            fallback={
+                              <AvatarFallback
+                                className="bg-primary text-white font-semibold text-lg"
+                                aria-label={`Avatar for ${review.name}`}
+                              >
+                                {review.name.split(' ').map((n: string) => n[0]).join('')}
+                              </AvatarFallback>
+                            }
+                          />
+                        </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-semibold text-primary">{review.name}</h4>
+                        {review.verified && (
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                            Verified
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex">{renderStars(review.rating)}</div>
+                        <span className="text-sm text-muted-foreground">{review.date}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                      <div className="relative">
-                        <Quote className="absolute -top-2 -left-2 h-8 w-8 text-primary/20" />
-                        <p className="text-muted-foreground pl-6 italic">"{review.comment}"</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              };
+                  
+                        <div className="relative">
+                          <Quote className="absolute -top-2 -left-2 h-8 w-8 text-primary/20" />
+                          <p className="text-muted-foreground pl-6 italic">"{review.comment}"</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                };
 
-              return <ReviewCard key={review.id} />;
-            })}
-        </div>
+                return <ReviewCard key={review.$id || index} />;
+              })}
+          </div>
+        )}
         
         {/* Load More Reviews */}
         {!showAll && displayedReviews < reviews.length && (

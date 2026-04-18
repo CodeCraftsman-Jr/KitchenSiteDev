@@ -67,8 +67,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ isOpen, onClose }) =
   const sendToTelegram = async (orderData: any) => {
     try {
       // Telegram Bot API integration
-      const botToken = process.env.REACT_APP_TELEGRAM_BOT_TOKEN;
-      const chatId = process.env.REACT_APP_TELEGRAM_CHAT_ID;
+      const botToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
+      const chatId = import.meta.env.VITE_TELEGRAM_CHAT_ID;
       
       if (!botToken || !chatId) {
         console.warn('Telegram credentials not configured');

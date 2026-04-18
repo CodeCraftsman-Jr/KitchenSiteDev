@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import Header from '@/components/Header';
+import SEO from '@/components/SEO';
 import Cart from '@/components/Cart';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
@@ -86,6 +87,11 @@ export const MenuPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
+      <SEO
+        title="Online Menu and Ordering"
+        description="Explore our full menu with veg and non-veg options, filter your favorites, and place your order online in minutes."
+        path="/menu"
+      />
       <Header />
       {/* Restaurant Header */}
       <div className="bg-white shadow-sm">

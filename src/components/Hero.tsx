@@ -1,30 +1,72 @@
 import { Button } from "@/components/ui/button";
 import { Star, Award, Clock, Users } from "lucide-react";
 import { Link } from "react-router-dom";
-import heroImage from "@/assets/hero-image.jpg";
+import { useQuery } from '@tanstack/react-query';
+import { api, getImageUrl } from '@/services/api';
+import { motion } from 'framer-motion';
 
 const Hero = () => {
+  const { data: config } = useQuery({
+    queryKey: ['site_config'],
+    queryFn: api.getSiteConfig,
+  });
+
+  const bgImage = config?.hero_image_file_id 
+    ? getImageUrl(config.hero_image_file_id) 
+    : '/images/restaurant-hero.jpg';
+
   return (
-    <section className="relative min-h-screen flex items-center">
+    <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background Image with Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroImage})` }}
+        style={{ backgroundImage: `url(${bgImage})` }}
       >
-        <div className="absolute inset-0 bg-gradient-hero"></div>
+        <div className="absolute inset-0 bg-gradient-hero mix-blend-multiply"></div>
+        <div className="absolute inset-0 bg-black/40"></div>
+      </div>
+
+      {/* Floating Particles/Emojis background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={`emoji-${i}`}
+            className="absolute text-4xl opacity-20"
+            initial={{ 
+              y: '100%', 
+              x: `${Math.random() * 100}%`,
+              rotate: 0 
+            }}
+            animate={{ 
+              y: '-10%', 
+              x: `${Math.random() * 100}%`,
+              rotate: 360 
+            }}
+            transition={{ 
+              duration: 15 + Math.random() * 10, 
+              repeat: Infinity, 
+              ease: "linear",
+              delay: Math.random() * 10
+            }}
+          >
+            {['🥘', '🍲', '🍛', '🍱', '🍗', '🍚'][i % 6]}
+          </motion.div>
+        ))}
       </div>
       
       {/* Content */}
-      <div className="relative container mx-auto px-4 text-center text-white">
+      <div className="relative container mx-auto px-4 text-center text-white z-10">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            Authentic Flavors
+            {config?.hero_title ? config.hero_title.split(' ').slice(0, -2).join(' ') : 'Authentic Flavors'}
             <br />
-            <span className="text-golden-yellow">Delivered Fresh</span>
+            <span className="text-golden-yellow">
+              {config?.hero_title ? config.hero_title.split(' ').slice(-2).join(' ') : 'Delivered Fresh'}
+            </span>
           </h1>
           
           <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-2xl mx-auto">
-            Experience the finest cloud kitchen with traditional recipes, modern techniques, and exceptional taste delivered to your doorstep.
+            {config?.hero_subtitle || "Experience the finest cloud kitchen with traditional recipes, modern techniques, and exceptional taste delivered to your doorstep."}
           </p>
           
           {/* Stats */}
@@ -60,7 +102,8 @@ const Hero = () => {
           </div>
           
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="relative flex flex-col sm:flex-row gap-4 justify-center mt-8">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary to-golden-yellow blur-[40px] opacity-30 animate-pulse" />
             <Button
               variant="hero"
               size="lg"

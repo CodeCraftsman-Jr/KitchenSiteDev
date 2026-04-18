@@ -1,9 +1,16 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin, Award, Users, Utensils, Shield } from "lucide-react";
+import { Clock, MapPin, Award, Users, Utensils, Shield, Loader2 } from "lucide-react";
 import { useProfilePhotoAnimation } from "@/hooks/useIntersectionObserver";
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/services/api';
+import AppwriteImage from "@/components/AppwriteImage";
+import ProfileCard from "@/components/ProfileCard";
+import DomeGallery from "@/components/DomeGallery";
+import { getImageUrl } from "@/services/api";
 
 const RestaurantDetails = () => {
+  const { data: config } = useQuery({ queryKey: ['site_config'], queryFn: api.getSiteConfig });
   const highlights = [
     { icon: Users, title: "Student Focused", description: "Healthy meals for students" },
     { icon: Award, title: "Young Entrepreneur", description: "19-year-old founder" },
@@ -11,43 +18,10 @@ const RestaurantDetails = () => {
     { icon: Shield, title: "Food Safety", description: "FSSAI certified kitchen" }
   ];
 
-  const staff = [
-    {
-      name: "Vasanthan",
-      role: "Owner",
-      experience: "Founder & Student Entrepreneur",
-      specialty: "Business Operations",
-      image: "/src/assets/staff/owner.JPG"
-    },
-    {
-      name: "Kitchen Manager",
-      role: "Manager",
-      experience: "Operations Management",
-      specialty: "Quality Control & Coordination",
-      image: "/src/assets/staff/Manager.jpg"
-    },
-    {
-      name: "Head Cook",
-      role: "Cook",
-      experience: "Traditional South Indian Cuisine",
-      specialty: "Dosa & Idli Specialist",
-      image: "/src/assets/staff/cook.jpg"
-    },
-    {
-      name: "Kitchen Staff",
-      role: "Staff",
-      experience: "Food Preparation & Service",
-      specialty: "Customer Service",
-      image: "/src/assets/staff/staff.jpg"
-    },
-    {
-      name: "Assistant Cook",
-      role: "Assistant Cook",
-      experience: "Food Preparation Support",
-      specialty: "Ingredient Preparation",
-      image: "/src/assets/staff/assistant cook.jpg"
-    }
-  ];
+  const { data: staffMembers = [], isLoading: isLoadingStaff } = useQuery({
+    queryKey: ['staff_members'],
+    queryFn: api.getStaffMembers,
+  });
 
   return (
     <section id="about" className="py-20 bg-background">
@@ -58,7 +32,7 @@ const RestaurantDetails = () => {
             Our Story & Heritage
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-            Vasanth's Kitchen was founded with a passion to serve healthy home-style foods which mainly focuses on students. As myself, I am a 19-year-old student and entrepreneur who started this business at a young age during my college days to solve the problems which I faced. This is the first step I took with the efforts I made. I had opened up this cloud kitchen and will do more in the future. Hope everyone does support me as you usually do. Thank you, Vasanthan From Pondicherry (Owner of Vasanth's Kitchen) - one important thing, all these can't be achieved without my parents' support (Elumalai (Dad) - Staff At Pondicherry University, Abirami (Mom))
+            {config?.restaurant_description || "Vasanth's Kitchen was founded with a passion to serve healthy home-style foods which mainly focuses on students. As myself, I am a 19-year-old student and entrepreneur who started this business at a young age during my college days to solve the problems which I faced. This is the first step I took with the efforts I made. I had opened up this cloud kitchen and will do more in the future. Hope everyone does support me as you usually do. Thank you, Vasanthan From Pondicherry (Owner of Vasanth's Kitchen) - one important thing, all these can't be achieved without my parents' support (Elumalai (Dad) - Staff At Pondicherry University, Abirami (Mom))"}
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
@@ -109,8 +83,12 @@ const RestaurantDetails = () => {
                   <div>
                     <p className="font-semibold">Address</p>
                     <p className="text-muted-foreground">
-                      Plot No: 50, 51 Mettu Street,<br />
-                      Chinna Kalapet, Puducherry
+                      {config?.address ? config.address.split('\n').map((line: string, i: number) => <span key={i}>{line}<br /></span>) : (
+                        <>
+                          Plot No: 50, 51 Mettu Street,<br />
+                          Chinna Kalapet, Puducherry
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -162,43 +140,31 @@ const RestaurantDetails = () => {
         {/* Staff Details */}
         <div className="kitchen-texture-bg spice-pattern-bg py-8 rounded-2xl">
           <h3 className="text-3xl font-bold text-primary text-center mb-12 parallax-bg">Meet Our Team</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto grid-container-animated profile-container">
-            {staff.map((member, index) => {
-              const StaffMemberCard = () => {
-                const { elementRef, animationClasses } = useProfilePhotoAnimation('staff', index * 200);
-
-                return (
-                  <Card
-                    ref={elementRef}
-                    className="text-center shadow-card hover:shadow-warm transition-all duration-300 stagger-item"
-                    tabIndex={0}
-                    role="article"
-                    aria-label={`${member.name}, ${member.role}`}
-                  >
-                    <CardContent className="p-6">
-                      <div className={`w-32 h-32 rounded-full overflow-hidden mx-auto mb-4 border-4 border-primary relative ${animationClasses}`}>
-                        <img
-                          src={member.image}
-                          alt={`${member.name} - ${member.role} at Vasanth's Kitchen`}
-                          className="w-full h-full object-cover transition-all duration-500"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-t from-primary/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
-                      </div>
-                      <h4 className="text-lg font-bold text-primary mb-1">{member.name}</h4>
-                      <p className="text-warm-orange font-semibold mb-1">{member.role}</p>
-                      <p className="text-muted-foreground text-sm mb-2">{member.experience}</p>
-                      <Badge variant="secondary" className="text-xs">{member.specialty}</Badge>
-                    </CardContent>
-                  </Card>
-                );
-              };
-
-              return <StaffMemberCard key={member.name} />;
-            })}
-          </div>
+          {isLoadingStaff ? (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : staffMembers.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 max-w-[1600px] mx-auto px-4 py-12">
+              {staffMembers.map((member: any) => (
+                <ProfileCard
+                  key={member.$id}
+                  name={member.name}
+                  title={member.role}
+                  handle={member.specialty?.toLowerCase().replace(/\s+/g, '') || "staff"}
+                  status="Active"
+                  avatarUrl={member.image_file_id ? getImageUrl(member.image_file_id) : "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1000&auto=format&fit=crop"}
+                  behindGlowColor="rgba(255, 107, 0, 0.4)"
+                  innerGradient="linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%)"
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
+      
+      {/* Dome Gallery Section */}
+      <DomeGallery />
     </section>
   );
 };
