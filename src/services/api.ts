@@ -1,6 +1,19 @@
 import { databases, DATABASE_ID, storage, BUCKET_ID, ID } from '@/lib/appwrite';
 import { Models, Query } from 'appwrite';
 
+type JsonRecord = Record<string, string | number | boolean | null>;
+
+type BookingPayload = {
+    customer_name: string;
+    customer_phone: string;
+    customer_email?: string;
+    booking_date: string;
+    booking_time: string;
+    party_size: number;
+    special_request?: string;
+    status?: string;
+};
+
 export const COLLECTIONS = {
     SITE_CONFIG: 'site_config',
     MENU_CATEGORIES: 'menu_categories',
@@ -10,6 +23,7 @@ export const COLLECTIONS = {
     OFFERS: 'offers',
     STAFF_MEMBERS: 'staff_members',
     GALLERY_PHOTOS: 'gallery_photos',
+    BOOKINGS: 'bookings',
 };
 
 // Generic Fetch All
@@ -108,11 +122,49 @@ export const api = {
         }
     },
 
+    async createBooking(data: BookingPayload) {
+        const primaryPayload: JsonRecord = {
+            customer_name: data.customer_name,
+            customer_phone: data.customer_phone,
+            customer_email: data.customer_email || '',
+            booking_date: data.booking_date,
+            booking_time: data.booking_time,
+            party_size: data.party_size,
+            special_request: data.special_request || '',
+            status: data.status || 'pending',
+        };
+
+        try {
+            return await databases.createDocument(
+                DATABASE_ID,
+                COLLECTIONS.BOOKINGS,
+                ID.unique(),
+                primaryPayload
+            );
+        } catch (primaryError) {
+            console.warn('Primary booking payload failed, retrying with minimal payload.', primaryError);
+            const fallbackPayload: JsonRecord = {
+                customer_name: data.customer_name,
+                customer_phone: data.customer_phone,
+                booking_date: data.booking_date,
+                booking_time: data.booking_time,
+                party_size: data.party_size,
+            };
+
+            return databases.createDocument(
+                DATABASE_ID,
+                COLLECTIONS.BOOKINGS,
+                ID.unique(),
+                fallbackPayload
+            );
+        }
+    },
+
     // Mutations
-    async createDocument(collectionId: string, data: any) {
+    async createDocument(collectionId: string, data: JsonRecord) {
         return databases.createDocument(DATABASE_ID, collectionId, ID.unique(), data);
     },
-    async updateDocument(collectionId: string, documentId: string, data: any) {
+    async updateDocument(collectionId: string, documentId: string, data: JsonRecord) {
         return databases.updateDocument(DATABASE_ID, collectionId, documentId, data);
     },
     async deleteDocument(collectionId: string, documentId: string) {

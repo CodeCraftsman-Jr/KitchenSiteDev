@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { api } from "@/services/api";
 import { CalendarCheck, Clock, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -14,20 +15,24 @@ const BookTable = () => {
   const { toast } = useToast();
   const [partySize, setPartySize] = useState("2");
   const [timeSlot, setTimeSlot] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const slots = useMemo(
     () => ["09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM"],
     []
   );
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const name = formData.get("name")?.toString().trim();
     const phone = formData.get("phone")?.toString().trim();
+    const email = formData.get("email")?.toString().trim();
     const date = formData.get("date")?.toString().trim();
+    const notes = formData.get("notes")?.toString().trim();
+    const parsedPartySize = partySize === '8+' ? 8 : Number(partySize);
 
-    if (!name || !phone || !date || !timeSlot) {
+    if (!name || !phone || !date || !timeSlot || Number.isNaN(parsedPartySize)) {
       toast({
         title: "Missing details",
         description: "Please fill name, phone, date, and preferred time slot.",
@@ -36,14 +41,46 @@ const BookTable = () => {
       return;
     }
 
-    toast({
-      title: "Booking request received",
-      description: `We have received your booking for ${date} at ${timeSlot}.`,
-    });
+    if (!/^\+?[0-9\s-]{10,15}$/.test(phone)) {
+      toast({
+        title: "Invalid phone number",
+        description: "Please enter a valid phone number.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    event.currentTarget.reset();
-    setPartySize("2");
-    setTimeSlot("");
+    setIsSubmitting(true);
+
+    try {
+      await api.createBooking({
+        customer_name: name,
+        customer_phone: phone,
+        customer_email: email,
+        booking_date: date,
+        booking_time: timeSlot,
+        party_size: parsedPartySize,
+        special_request: notes,
+        status: 'pending',
+      });
+
+      toast({
+        title: "Booking request received",
+        description: `We have received your booking for ${date} at ${timeSlot}.`,
+      });
+
+      event.currentTarget.reset();
+      setPartySize("2");
+      setTimeSlot("");
+    } catch (error) {
+      toast({
+        title: "Booking failed",
+        description: "We could not submit your request now. Please call us directly.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -79,6 +116,11 @@ const BookTable = () => {
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input id="phone" name="phone" placeholder="Enter your phone" required />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email (optional)</Label>
+                  <Input id="email" name="email" type="email" placeholder="Enter your email" />
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-3">
@@ -130,9 +172,9 @@ const BookTable = () => {
                   />
                 </div>
 
-                <Button type="submit" variant="hero" className="w-full md:w-auto">
+                <Button type="submit" variant="hero" className="w-full md:w-auto" disabled={isSubmitting}>
                   <CalendarCheck className="mr-2 h-4 w-4" />
-                  Confirm Booking Request
+                  {isSubmitting ? 'Submitting...' : 'Confirm Booking Request'}
                 </Button>
               </form>
             </CardContent>

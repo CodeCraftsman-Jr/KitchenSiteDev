@@ -6,9 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import Header from '@/components/Header';
 import SEO from '@/components/SEO';
+import JSONLD from '@/components/JSONLD';
 import Cart from '@/components/Cart';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
+import { api, getImageUrl } from '@/services/api';
+import { getCanonicalUrl } from '@/lib/seo';
 import {
   Star,
   Clock,
@@ -17,8 +21,55 @@ import {
   ShoppingCart,
   Percent
 } from 'lucide-react';
-import { MenuData, MenuFilters as MenuFiltersType, MenuItem } from '@/types/menu';
-import menuData from '@/data/menuData';
+import { MenuFilters as MenuFiltersType, MenuItem } from '@/types/menu';
+
+type MenuItemDoc = {
+  $id: string;
+  name: string;
+  description?: string;
+  price: number;
+  image_file_id?: string;
+  is_veg?: boolean;
+  is_spicy?: boolean;
+  is_popular?: boolean;
+  rating?: number;
+  review_count?: number;
+  preparation_time?: string;
+  category_id?: string;
+};
+
+type CategoryDoc = {
+  $id: string;
+  name: string;
+  description?: string;
+  is_popular?: boolean;
+};
+
+type OfferDoc = {
+  $id: string;
+  title: string;
+  description?: string;
+  code?: string;
+};
+
+type MenuSchemaItem = {
+  '@type': 'MenuItem';
+  name: string;
+  description: string;
+  offers: {
+    '@type': 'Offer';
+    priceCurrency: 'INR';
+    price: number;
+    availability: string;
+    url: string;
+  };
+};
+
+type MenuSchemaSection = {
+  '@type': 'MenuSection';
+  name: string;
+  hasMenuItem: MenuSchemaItem[];
+};
 
 export const MenuPage: React.FC = () => {
   const [filters, setFilters] = useState<MenuFiltersType>({
@@ -39,9 +90,89 @@ export const MenuPage: React.FC = () => {
   } = useCart();
   const { toast } = useToast();
 
+  const { data: config } = useQuery({
+    queryKey: ['site_config'],
+    queryFn: api.getSiteConfig,
+  });
+
+  const { data: categoryDocs = [] } = useQuery<CategoryDoc[]>({
+    queryKey: ['menu_categories'],
+    queryFn: api.getCategories,
+  });
+
+  const { data: menuItemDocs = [] } = useQuery<MenuItemDoc[]>({
+    queryKey: ['menu_items'],
+    queryFn: api.getMenuItems,
+  });
+
+  const { data: offers = [] } = useQuery<OfferDoc[]>({
+    queryKey: ['offers'],
+    queryFn: api.getOffers,
+  });
+
+  const normalizedItems = useMemo<MenuItem[]>(() => {
+    return menuItemDocs.map((item) => ({
+      id: item.$id,
+      name: item.name,
+      description: item.description || 'Freshly prepared by our kitchen.',
+      price: item.price,
+      image: item.image_file_id ? getImageUrl(item.image_file_id) : '/images/default-food.jpg',
+      isVeg: Boolean(item.is_veg),
+      isSpicy: Boolean(item.is_spicy),
+      isPopular: Boolean(item.is_popular),
+      rating: item.rating,
+      reviewCount: item.review_count,
+      preparationTime: item.preparation_time,
+    }));
+  }, [menuItemDocs]);
+
+  const menuCategories = useMemo(() => {
+    return categoryDocs.map((category) => {
+      const items = menuItemDocs
+        .filter((item) => item.category_id === category.$id)
+        .map((item) => normalizedItems.find((normalized) => normalized.id === item.$id))
+        .filter((item): item is MenuItem => Boolean(item));
+
+      return {
+        id: category.$id,
+        name: category.name,
+        description: category.description,
+        isPopular: Boolean(category.is_popular),
+        items,
+      };
+    }).filter((category) => category.items.length > 0);
+  }, [categoryDocs, menuItemDocs, normalizedItems]);
+
+  const menuSchema = useMemo(() => {
+    const sections: MenuSchemaSection[] = menuCategories.map((category) => ({
+      '@type': 'MenuSection',
+      name: category.name,
+      hasMenuItem: category.items.slice(0, 20).map((item) => ({
+        '@type': 'MenuItem',
+        name: item.name,
+        description: item.description,
+        offers: {
+          '@type': 'Offer',
+          priceCurrency: 'INR',
+          price: item.price,
+          availability: 'https://schema.org/InStock',
+          url: getCanonicalUrl('/menu'),
+        },
+      })),
+    }));
+
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'Menu',
+      name: "Vasanth's Kitchen Menu",
+      hasMenuSection: sections,
+      url: getCanonicalUrl('/menu'),
+    };
+  }, [menuCategories]);
+
   // Filter menu items based on current filters
   const filteredCategories = useMemo(() => {
-    return menuData.categories.map(category => {
+    return menuCategories.map(category => {
       const filteredItems = category.items.filter(item => {
         // Dietary filter
         if (filters.dietary === 'veg' && !item.isVeg) return false;
@@ -66,7 +197,7 @@ export const MenuPage: React.FC = () => {
         items: filteredItems,
       };
     }).filter(category => category.items.length > 0);
-  }, [filters]);
+  }, [filters, menuCategories]);
 
   const handleAddToCart = (item: MenuItem) => {
     addToCart(item);
@@ -92,6 +223,7 @@ export const MenuPage: React.FC = () => {
         description="Explore our full menu with veg and non-veg options, filter your favorites, and place your order online in minutes."
         path="/menu"
       />
+      <JSONLD id="menu" data={menuSchema} />
       <Header />
       {/* Restaurant Header */}
       <div className="bg-white shadow-sm">
@@ -100,8 +232,8 @@ export const MenuPage: React.FC = () => {
             {/* Restaurant Image */}
             <div className="lg:col-span-1">
               <img
-                src={menuData.restaurant.image}
-                alt={menuData.restaurant.name}
+                src={config?.hero_image_file_id ? getImageUrl(config.hero_image_file_id) : '/images/restaurant-hero.jpg'}
+                alt={config?.site_name || "Vasanth's Kitchen"}
                 className="w-full h-64 lg:h-48 object-cover rounded-lg shadow-md"
               />
             </div>
@@ -110,15 +242,15 @@ export const MenuPage: React.FC = () => {
             <div className="lg:col-span-2 space-y-4">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  {menuData.restaurant.name}
+                  {config?.site_name || "Vasanth's Kitchen"}
                 </h1>
                 <p className="text-gray-600 mt-2">
-                  {menuData.restaurant.description}
+                  {config?.hero_subtitle || 'Authentic South Indian cuisine with traditional flavors and fresh ingredients.'}
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {menuData.restaurant.cuisine.map((cuisine) => (
+                {['South Indian', 'Biryani', 'Fresh Juices'].map((cuisine) => (
                   <Badge key={cuisine} variant="secondary">
                     {cuisine}
                   </Badge>
@@ -128,33 +260,33 @@ export const MenuPage: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-medium">{menuData.restaurant.rating}</span>
-                  <span className="text-gray-500">({menuData.restaurant.reviewCount})</span>
+                  <span className="font-medium">4.8</span>
+                  <span className="text-gray-500">(400+)</span>
                 </div>
                 
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-gray-500" />
-                  <span>{menuData.restaurant.deliveryTime}</span>
+                  <span>25-35 mins</span>
                 </div>
                 
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-gray-500" />
-                  <span className="truncate">{menuData.restaurant.address}</span>
+                  <span className="truncate">{config?.address || 'Chinna Kalapet, Puducherry'}</span>
                 </div>
                 
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4 text-gray-500" />
-                  <span>{menuData.restaurant.phone}</span>
+                  <span>{config?.phone || '+91 9442434269'}</span>
                 </div>
               </div>
 
               {/* Offers */}
-              {menuData.offers && menuData.offers.length > 0 && (
+              {offers.length > 0 && (
                 <div className="space-y-2">
                   <h3 className="font-semibold text-gray-900">Current Offers</h3>
                   <div className="flex flex-wrap gap-2">
-                    {menuData.offers.map((offer) => (
-                      <Card key={offer.id} className="border-orange-200 bg-orange-50">
+                    {offers.map((offer) => (
+                      <Card key={offer.$id} className="border-orange-200 bg-orange-50">
                         <CardContent className="p-3">
                           <div className="flex items-center gap-2">
                             <Percent className="w-4 h-4 text-orange-600" />
@@ -163,7 +295,7 @@ export const MenuPage: React.FC = () => {
                                 {offer.title}
                               </div>
                               <div className="text-xs text-orange-600">
-                                {offer.description}
+                                {offer.description || 'Limited time offer'}
                               </div>
                               {offer.code && (
                                 <div className="text-xs font-mono bg-orange-200 text-orange-800 px-1 rounded mt-1 inline-block">
@@ -187,7 +319,7 @@ export const MenuPage: React.FC = () => {
       <MenuFilters
         filters={filters}
         onFiltersChange={setFilters}
-        categories={menuData.categories.map(cat => ({ id: cat.id, name: cat.name }))}
+        categories={menuCategories.map(cat => ({ id: cat.id, name: cat.name }))}
       />
 
       {/* Menu Content */}

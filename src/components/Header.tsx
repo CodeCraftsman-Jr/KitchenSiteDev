@@ -1,20 +1,37 @@
 import { Button } from "@/components/ui/button";
-import { Phone, MapPin, Menu as MenuIcon } from "lucide-react";
+import { Phone, MapPin, Menu as MenuIcon, ShoppingBag, BookOpen, PenSquare } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import VasanthsKitchenLogo from "@/components/ui/logo";
 import { useQuery } from '@tanstack/react-query';
 import { api, getImageUrl } from '@/services/api';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
+const navLinks = [
+  { label: 'Home', href: '/' },
+  { label: 'Menu', href: '/menu' },
+  { label: 'Book Table', href: '/book-table' },
+  { label: 'About', href: '/about' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Contact', href: '/contact' },
+];
+
 const Header = () => {
   const location = useLocation();
   const { data: config } = useQuery({ queryKey: ['site_config'], queryFn: api.getSiteConfig });
 
+  const orderNow = () => {
+    if (location.pathname === '/') {
+      document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    window.location.href = '/#menu';
+  };
+
   return (
     <header className="bg-white shadow-card border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-4">
             <Link
               to="/"
               className="hover:opacity-80 transition-opacity duration-300"
@@ -38,28 +55,29 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8 font-medium">
-            <Link to="/" className={`transition-colors hover:text-primary ${location.pathname === '/' ? 'text-primary' : 'text-foreground/80'}`}>Home</Link>
-            <Link to="/about" className={`transition-colors hover:text-primary ${location.pathname === '/about' ? 'text-primary' : 'text-foreground/80'}`}>About & Gallery</Link>
-            <Link to="/blog" className={`transition-colors hover:text-primary ${location.pathname === '/blog' ? 'text-primary' : 'text-foreground/80'}`}>Blog</Link>
-            <Link to="/book-table" className={`transition-colors hover:text-primary ${location.pathname === '/book-table' ? 'text-primary' : 'text-foreground/80'}`}>Book Table</Link>
-            <Link to="/contact" className={`transition-colors hover:text-primary ${location.pathname === '/contact' ? 'text-primary' : 'text-foreground/80'}`}>Contact & Support</Link>
+          <nav className="hidden lg:flex items-center space-x-6 font-medium">
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className={`transition-colors hover:text-primary ${isActive ? 'text-primary' : 'text-foreground/80'}`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Button
               variant="hero"
               size="sm"
               className="hidden sm:flex"
-              onClick={() => {
-                if (location.pathname === '/') {
-                  document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                  window.location.href = '/#menu';
-                }
-              }}
+              onClick={orderNow}
             >
+              <ShoppingBag className="h-4 w-4" />
               Order Now
             </Button>
 
@@ -75,17 +93,45 @@ const Header = () => {
                   <SheetHeader>
                     <SheetTitle>Navigation</SheetTitle>
                   </SheetHeader>
-                  <div className="flex flex-col gap-6 mt-8">
-                    <Link to="/" className="text-lg font-medium hover:text-primary transition-colors">Home & Menu</Link>
-                    <Link to="/about" className="text-lg font-medium hover:text-primary transition-colors">About Us & Team</Link>
-                    <Link to="/about#gallery" className="text-lg font-medium hover:text-primary transition-colors pl-4 text-muted-foreground">- Gallery</Link>
-                    <Link to="/blog" className="text-lg font-medium hover:text-primary transition-colors">Blog & Updates</Link>
-                    <Link to="/book-table" className="text-lg font-medium hover:text-primary transition-colors">Book Table</Link>
-                    <Link to="/contact" className="text-lg font-medium hover:text-primary transition-colors">Contact & Documents</Link>
+                  <div className="mt-8 space-y-8">
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Order & Booking</p>
+                      <button type="button" onClick={orderNow} className="flex items-center gap-2 text-left text-lg font-medium hover:text-primary transition-colors">
+                        <ShoppingBag className="h-4 w-4" />
+                        Order Now
+                      </button>
+                      <Link to="/book-table" className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors">
+                        <BookOpen className="h-4 w-4" />
+                        Book Table
+                      </Link>
+                    </div>
+
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Explore</p>
+                      {navLinks.map((link) => (
+                        <Link key={link.href} to={link.href} className="block text-lg font-medium hover:text-primary transition-colors">
+                          {link.label}
+                        </Link>
+                      ))}
+                      <Link to="/about#gallery" className="block pl-5 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Gallery</Link>
+                    </div>
+
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Support</p>
+                      <a href="tel:+919442434269" className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors">
+                        <Phone className="h-4 w-4" />
+                        Call Support
+                      </a>
+                      <Link to="/blog" className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors">
+                        <PenSquare className="h-4 w-4" />
+                        Latest Updates
+                      </Link>
+                    </div>
+
                     <Button
                       variant="hero"
                       className="mt-4 w-full"
-                      onClick={() => window.location.href = '/#menu'}
+                      onClick={orderNow}
                     >
                       Order Now
                     </Button>
