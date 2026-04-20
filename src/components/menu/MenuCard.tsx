@@ -16,7 +16,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({ item, onAddToCart }) => {
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
+    <Card id={`menu-item-${item.id}`} className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
       <div className="relative">
         <img
           src={item.image}

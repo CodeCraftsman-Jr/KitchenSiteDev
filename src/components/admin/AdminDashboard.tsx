@@ -6,6 +6,9 @@ import ReviewsEditor from './ReviewsEditor';
 import MediaLibrary from './MediaLibrary';
 import StaffEditor from './StaffEditor';
 import GalleryEditor from './GalleryEditor';
+import OrdersEditor from './OrdersEditor';
+import BookingsEditor from './BookingsEditor';
+import SeoPagesEditor from './SeoPagesEditor';
 
 const AdminDashboard = () => {
   return (
@@ -15,10 +18,13 @@ const AdminDashboard = () => {
           <TabsTrigger value="site_config">Site Config</TabsTrigger>
           <TabsTrigger value="media">Media Library</TabsTrigger>
           <TabsTrigger value="menu_items">Menu Items</TabsTrigger>
+          <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="bookings">Bookings</TabsTrigger>
           <TabsTrigger value="reviews">Reviews</TabsTrigger>
           <TabsTrigger value="blogs">Blogs</TabsTrigger>
           <TabsTrigger value="staff">Staff</TabsTrigger>
           <TabsTrigger value="gallery">Gallery</TabsTrigger>
+          <TabsTrigger value="seo_pages">SEO Pages</TabsTrigger>
         </TabsList>
 
         <TabsContent value="site_config">
@@ -31,6 +37,14 @@ const AdminDashboard = () => {
 
         <TabsContent value="menu_items">
           <MenuItemsEditor />
+        </TabsContent>
+
+        <TabsContent value="orders">
+          <OrdersEditor />
+        </TabsContent>
+
+        <TabsContent value="bookings">
+          <BookingsEditor />
         </TabsContent>
 
         <TabsContent value="reviews">
@@ -47,6 +61,10 @@ const AdminDashboard = () => {
         
         <TabsContent value="gallery">
           <GalleryEditor />
+        </TabsContent>
+
+        <TabsContent value="seo_pages">
+          <SeoPagesEditor />
         </TabsContent>
         
       </Tabs>

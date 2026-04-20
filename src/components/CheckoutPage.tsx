@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,15 +9,18 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
+import { api } from '@/services/api';
 import { 
   ArrowLeft, 
   Truck, 
   Clock, 
   MapPin, 
   Phone, 
-  MessageCircle,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  CreditCard,
+  Wallet,
+  Banknote,
 } from 'lucide-react';
 
 interface CheckoutPageProps {
@@ -28,10 +31,14 @@ interface CheckoutPageProps {
 export const CheckoutPage: React.FC<CheckoutPageProps> = ({ isOpen, onClose }) => {
   const { cartItems, getTotalAmount, clearCart } = useCart();
   const { toast } = useToast();
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedDelivery, setSelectedDelivery] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [orderNumber, setOrderNumber] = useState('');
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     phone: '',
+    email: '',
     address: '',
     notes: ''
   });
@@ -64,7 +71,39 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ isOpen, onClose }) =
     }
   ];
 
-  const sendToTelegram = async (orderData: any) => {
+  const subtotal = getTotalAmount();
+  const tax = useMemo(() => Math.round(subtotal * 0.05), [subtotal]);
+  const deliveryFee = useMemo(() => {
+    if (selectedDelivery === 'own-delivery') {
+      return subtotal >= 149 ? 0 : 25;
+    }
+    if (selectedDelivery === 'swiggy') {
+      return subtotal >= 199 ? 0 : 35;
+    }
+    if (selectedDelivery === 'zomato') {
+      return subtotal >= 249 ? 0 : 40;
+    }
+    return 0;
+  }, [selectedDelivery, subtotal]);
+  const grandTotal = subtotal + tax + deliveryFee;
+
+  const createOrderNo = () => `VK-${Date.now().toString().slice(-8)}`;
+
+  const sendToTelegram = async (orderData: {
+    name: string;
+    phone: string;
+    email?: string;
+    address: string;
+    delivery: string;
+    paymentMethod: string;
+    items: Array<{ name: string; quantity: number; price: number }>;
+    subtotal: number;
+    tax: number;
+    deliveryFee: number;
+    total: number;
+    notes: string;
+    orderNo: string;
+  }) => {
     try {
       // Telegram Bot API integration
       const botToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
@@ -78,12 +117,18 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ isOpen, onClose }) =
       const message = `🍽️ *New Order Received*\n\n` +
         `👤 *Customer:* ${orderData.name}\n` +
         `📞 *Phone:* ${orderData.phone}\n` +
+        `📧 *Email:* ${orderData.email || 'N/A'}\n` +
         `📍 *Address:* ${orderData.address}\n` +
         `🚚 *Delivery:* ${orderData.delivery}\n\n` +
-        `*Items:*\n${orderData.items.map((item: any) => 
+        `💳 *Payment:* ${orderData.paymentMethod}\n` +
+        `*Items:*\n${orderData.items.map((item) => 
           `• ${item.name} x${item.quantity} - ₹${item.price * item.quantity}`
         ).join('\n')}\n\n` +
-        `💰 *Total: ₹${orderData.total}*\n\n` +
+        `🧾 *Subtotal:* ₹${orderData.subtotal}\n` +
+        `📦 *Delivery:* ₹${orderData.deliveryFee}\n` +
+        `🧮 *Tax:* ₹${orderData.tax}\n` +
+        `💰 *Total:* ₹${orderData.total}\n` +
+        `🔖 *Order No:* ${orderData.orderNo}\n\n` +
         `📝 *Notes:* ${orderData.notes || 'None'}`;
 
       await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -102,85 +147,150 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ isOpen, onClose }) =
     }
   };
 
-  const handlePlaceOrder = async () => {
+  const validateStepOne = () => {
     if (!selectedDelivery) {
       toast({
-        title: "Select Delivery Option",
-        description: "Please choose a delivery method to continue.",
-        variant: "destructive"
+        title: 'Select delivery option',
+        description: 'Please choose your delivery method to continue.',
+        variant: 'destructive',
       });
-      return;
+      return false;
     }
 
+    return true;
+  };
+
+  const validateStepTwo = () => {
     if (!customerInfo.name || !customerInfo.phone) {
       toast({
-        title: "Missing Information",
-        description: "Please fill in your name and phone number.",
-        variant: "destructive"
+        title: 'Missing information',
+        description: 'Please fill your name and phone number.',
+        variant: 'destructive',
       });
-      return;
+      return false;
     }
 
+    if (!/^\+?[0-9\s-]{10,15}$/.test(customerInfo.phone)) {
+      toast({
+        title: 'Invalid phone number',
+        description: 'Please enter a valid phone number.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    if (selectedDelivery === 'own-delivery' && !customerInfo.address.trim()) {
+      toast({
+        title: 'Address required',
+        description: 'Please provide address for own delivery.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const verifyOnlinePayment = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    return {
+      success: true,
+      transactionRef: `TXN-${Date.now().toString().slice(-10)}`,
+    };
+  };
+
+  const handlePlaceOrder = async () => {
     setIsProcessing(true);
 
     try {
+      const orderNo = createOrderNo();
+
+      const order = await api.createOrder({
+        order_no: orderNo,
+        customer_name: customerInfo.name,
+        customer_phone: customerInfo.phone,
+        customer_email: customerInfo.email,
+        address: customerInfo.address,
+        delivery_type: selectedDelivery,
+        notes: customerInfo.notes,
+        subtotal,
+        tax,
+        delivery_fee: deliveryFee,
+        discount: 0,
+        grand_total: grandTotal,
+        order_status: 'pending',
+        payment_status: paymentMethod === 'cod' ? 'pending' : 'initiated',
+        payment_method: paymentMethod,
+        placed_at: new Date().toISOString(),
+      });
+
+      await api.createOrderItems(
+        cartItems.map((item) => ({
+          order_id: order.$id,
+          item_id: item.id,
+          item_name: item.name,
+          unit_price: item.price,
+          quantity: item.quantity,
+          line_total: item.price * item.quantity,
+        }))
+      );
+
+      let paymentStatus = 'pending';
+      let transactionRef = '';
+
+      if (paymentMethod !== 'cod') {
+        const paymentResult = await verifyOnlinePayment();
+        if (!paymentResult.success) {
+          throw new Error('Payment verification failed.');
+        }
+
+        paymentStatus = 'paid';
+        transactionRef = paymentResult.transactionRef;
+      }
+
+      await api.createPayment({
+        order_id: order.$id,
+        payment_method: paymentMethod,
+        amount: grandTotal,
+        payment_status: paymentStatus,
+        transaction_ref: transactionRef,
+        paid_at: paymentStatus === 'paid' ? new Date().toISOString() : '',
+      });
+
+      await api.updateOrderStatus(order.$id, 'confirmed', paymentStatus);
+
       const orderData = {
         name: customerInfo.name,
         phone: customerInfo.phone,
+        email: customerInfo.email,
         address: customerInfo.address,
         delivery: selectedDelivery,
+        paymentMethod,
         items: cartItems,
-        total: getTotalAmount(),
+        subtotal,
+        tax,
+        deliveryFee,
+        total: grandTotal,
         notes: customerInfo.notes,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        orderNo,
       };
 
       // Send to Telegram
       await sendToTelegram(orderData);
 
-      if (selectedDelivery === 'own-delivery') {
-        // Show WhatsApp message for own delivery
-        const whatsappMessage = encodeURIComponent(
-          `Hi! I'd like to place an order:\n\n` +
-          `Items:\n${cartItems.map(item => 
-            `• ${item.name} x${item.quantity} - ₹${item.price * item.quantity}`
-          ).join('\n')}\n\n` +
-          `Total: ₹${getTotalAmount()}\n` +
-          `Name: ${customerInfo.name}\n` +
-          `Phone: ${customerInfo.phone}\n` +
-          `Address: ${customerInfo.address}\n` +
-          `Notes: ${customerInfo.notes || 'None'}`
-        );
-        
-        window.open(`https://wa.me/919442434269?text=${whatsappMessage}`, '_blank');
-        
-        toast({
-          title: "Order Sent!",
-          description: "Items are sent to kitchen manager. Kindly contact restaurant with the contact number below.",
-          duration: 5000
-        });
-      } else {
-        // Redirect to external platforms
-        const platformUrls = {
-          'swiggy': 'https://www.swiggy.com/city/pondicherry/vasanths-kitchen-kalapet-auroville-rest967996',
-          'zomato': 'https://www.zomato.com/puducherry/vasanths-kitchen-auroville'
-        };
-        
-        window.open(platformUrls[selectedDelivery as keyof typeof platformUrls], '_blank');
-        
-        toast({
-          title: "Redirecting...",
-          description: `Opening ${selectedDelivery} to complete your order.`,
-        });
-      }
+      setOrderNumber(orderNo);
+      toast({
+        title: 'Order placed successfully',
+        description: `Your order ${orderNo} is confirmed.`,
+      });
 
       clearCart();
-      onClose();
     } catch (error) {
       toast({
-        title: "Order Failed",
-        description: "There was an error processing your order. Please try again.",
-        variant: "destructive"
+        title: 'Order failed',
+        description: 'We could not process your order now. Please try again.',
+        variant: 'destructive'
       });
     } finally {
       setIsProcessing(false);
@@ -213,15 +323,33 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ isOpen, onClose }) =
                 </div>
               ))}
               <Separator />
+              <div className="flex justify-between items-center text-sm">
+                <span>Subtotal</span>
+                <span>₹{subtotal}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span>Tax (5%)</span>
+                <span>₹{tax}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span>Delivery Fee</span>
+                <span>₹{deliveryFee}</span>
+              </div>
               <div className="flex justify-between items-center font-bold">
                 <span>Total</span>
-                <span>₹{getTotalAmount()}</span>
+                <span>₹{grandTotal}</span>
               </div>
             </div>
           </div>
 
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Badge variant={step >= 1 ? 'default' : 'secondary'}>1. Delivery</Badge>
+            <Badge variant={step >= 2 ? 'default' : 'secondary'}>2. Customer</Badge>
+            <Badge variant={step >= 3 ? 'default' : 'secondary'}>3. Payment</Badge>
+          </div>
+
           {/* Delivery Options */}
-          <div>
+          <div className={step === 1 ? '' : 'opacity-60'}>
             <h3 className="font-semibold mb-3">Choose Delivery Option</h3>
             <RadioGroup value={selectedDelivery} onValueChange={setSelectedDelivery}>
               {deliveryOptions.map((option) => (
@@ -263,7 +391,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ isOpen, onClose }) =
           </div>
 
           {/* Customer Information */}
-          <div>
+          <div className={step === 2 ? '' : 'opacity-60'}>
             <h3 className="font-semibold mb-3">Customer Information</h3>
             <div className="space-y-4">
               <div>
@@ -282,6 +410,16 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ isOpen, onClose }) =
                   value={customerInfo.phone}
                   onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
                   placeholder="Enter your phone number"
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={customerInfo.email}
+                  onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="Enter your email"
                 />
               </div>
               <div>
@@ -305,6 +443,24 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ isOpen, onClose }) =
             </div>
           </div>
 
+          <div className={step === 3 ? '' : 'opacity-60'}>
+            <h3 className="font-semibold mb-3">Payment Method</h3>
+            <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+              <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                <RadioGroupItem value="cod" id="cod" />
+                <Label htmlFor="cod" className="flex items-center gap-2 cursor-pointer"><Banknote className="h-4 w-4" />Cash on Delivery</Label>
+              </div>
+              <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                <RadioGroupItem value="upi" id="upi" />
+                <Label htmlFor="upi" className="flex items-center gap-2 cursor-pointer"><Wallet className="h-4 w-4" />UPI</Label>
+              </div>
+              <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                <RadioGroupItem value="card" id="card" />
+                <Label htmlFor="card" className="flex items-center gap-2 cursor-pointer"><CreditCard className="h-4 w-4" />Card</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
           {/* Contact Information */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <h4 className="font-medium mb-2">Restaurant Contact</h4>
@@ -315,13 +471,52 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ isOpen, onClose }) =
           </div>
 
           {/* Place Order Button */}
-          <Button 
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-            onClick={handlePlaceOrder}
-            disabled={isProcessing}
-          >
-            {isProcessing ? 'Processing...' : 'Place Order'}
-          </Button>
+          {!orderNumber ? (
+            <div className="flex gap-2">
+              {step > 1 && (
+                <Button variant="outline" className="w-full" onClick={() => setStep((prev) => Math.max(1, (prev - 1) as 1 | 2 | 3))}>
+                  Back
+                </Button>
+              )}
+
+              {step < 3 ? (
+                <Button
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                  onClick={() => {
+                    if (step === 1 && !validateStepOne()) return;
+                    if (step === 2 && !validateStepTwo()) return;
+                    setStep((prev) => Math.min(3, (prev + 1) as 1 | 2 | 3));
+                  }}
+                >
+                  Continue
+                </Button>
+              ) : (
+                <Button
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                  onClick={handlePlaceOrder}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? 'Processing...' : 'Place Order'}
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+              <div className="mb-2 flex items-center gap-2 font-semibold text-green-800">
+                <CheckCircle className="h-5 w-5" />
+                Order Confirmed
+              </div>
+              <p className="text-sm text-green-700">Your order number is <span className="font-bold">{orderNumber}</span>.</p>
+              <div className="mt-4 flex gap-2">
+                <Button className="w-full" onClick={() => {
+                  setOrderNumber('');
+                  onClose();
+                }}>
+                  Done
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

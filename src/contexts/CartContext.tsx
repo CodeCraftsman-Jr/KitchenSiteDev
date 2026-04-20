@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { MenuItem } from '@/types/menu';
 
 interface CartItem extends MenuItem {
@@ -32,8 +32,20 @@ interface CartProviderProps {
 }
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('kitchen_cart_items');
+      if (!saved) return [];
+      return JSON.parse(saved) as CartItem[];
+    } catch {
+      return [];
+    }
+  });
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('kitchen_cart_items', JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const addToCart = (item: MenuItem) => {
     setCartItems(prevItems => {

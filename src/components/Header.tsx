@@ -57,7 +57,9 @@ const Header = () => {
 
           <nav className="hidden lg:flex items-center space-x-6 font-medium">
             {navLinks.map((link) => {
-              const isActive = location.pathname === link.href;
+              const isActive = link.href === '/'
+                ? location.pathname === '/'
+                : location.pathname === link.href || location.pathname.startsWith(`${link.href}/`);
               return (
                 <Link
                   key={link.href}

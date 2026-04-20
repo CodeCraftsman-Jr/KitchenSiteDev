@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import BlogPage from "./pages/BlogPage";
+import BlogPostPage from "./pages/BlogPostPage";
 import NotFound from "./pages/NotFound";
 import MenuPage from "./components/menu/MenuPage";
 import Admin from "./pages/Admin";
@@ -29,7 +30,10 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/menu" element={<MenuPage />} />
+            <Route path="/menu/:categorySlug" element={<MenuPage />} />
+            <Route path="/menu/:categorySlug/:itemSlug" element={<MenuPage />} />
             <Route path="/book-table" element={<BookTable />} />
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

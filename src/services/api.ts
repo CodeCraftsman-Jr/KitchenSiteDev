@@ -14,6 +14,43 @@ type BookingPayload = {
     status?: string;
 };
 
+type OrderPayload = {
+    order_no: string;
+    customer_name: string;
+    customer_phone: string;
+    customer_email?: string;
+    address?: string;
+    delivery_type: string;
+    notes?: string;
+    subtotal: number;
+    tax: number;
+    delivery_fee: number;
+    discount: number;
+    grand_total: number;
+    order_status: string;
+    payment_status: string;
+    payment_method: string;
+    placed_at: string;
+};
+
+type OrderItemPayload = {
+    order_id: string;
+    item_id: string;
+    item_name: string;
+    unit_price: number;
+    quantity: number;
+    line_total: number;
+};
+
+type PaymentPayload = {
+    order_id: string;
+    payment_method: string;
+    amount: number;
+    payment_status: string;
+    transaction_ref?: string;
+    paid_at?: string;
+};
+
 export const COLLECTIONS = {
     SITE_CONFIG: 'site_config',
     MENU_CATEGORIES: 'menu_categories',
@@ -24,6 +61,10 @@ export const COLLECTIONS = {
     STAFF_MEMBERS: 'staff_members',
     GALLERY_PHOTOS: 'gallery_photos',
     BOOKINGS: 'bookings',
+    ORDERS: 'orders',
+    ORDER_ITEMS: 'order_items',
+    PAYMENTS: 'payments',
+    SEO_PAGES: 'seo_pages',
 };
 
 // Generic Fetch All
@@ -108,6 +149,15 @@ export const api = {
     async getSiteConfig() {
         return fetchSiteConfig();
     },
+    async getOrders() {
+        return fetchAllDocuments(COLLECTIONS.ORDERS, [Query.orderDesc('$createdAt'), Query.limit(200)]);
+    },
+    async getBookings() {
+        return fetchAllDocuments(COLLECTIONS.BOOKINGS, [Query.orderDesc('$createdAt'), Query.limit(200)]);
+    },
+    async getSeoPages() {
+        return fetchAllDocuments(COLLECTIONS.SEO_PAGES, [Query.limit(300)]);
+    },
     async getFiles() {
         try {
             // Use the official Appwrite SDK — bucket must have Users: Read permission
@@ -158,6 +208,53 @@ export const api = {
                 fallbackPayload
             );
         }
+    },
+
+    async createOrder(data: OrderPayload) {
+        return databases.createDocument(
+            DATABASE_ID,
+            COLLECTIONS.ORDERS,
+            ID.unique(),
+            {
+                ...data,
+                customer_email: data.customer_email || '',
+                address: data.address || '',
+                notes: data.notes || '',
+            }
+        );
+    },
+
+    async createOrderItems(items: OrderItemPayload[]) {
+        return Promise.all(
+            items.map((item) => databases.createDocument(DATABASE_ID, COLLECTIONS.ORDER_ITEMS, ID.unique(), item))
+        );
+    },
+
+    async createPayment(data: PaymentPayload) {
+        const payload: JsonRecord = {
+            order_id: data.order_id,
+            payment_method: data.payment_method,
+            amount: data.amount,
+            payment_status: data.payment_status,
+            transaction_ref: data.transaction_ref || '',
+            paid_at: data.paid_at || '',
+        };
+
+        return databases.createDocument(DATABASE_ID, COLLECTIONS.PAYMENTS, ID.unique(), payload);
+    },
+
+    async updateOrderStatus(orderId: string, order_status: string, payment_status?: string) {
+        const payload: JsonRecord = {
+            order_status,
+            payment_status: payment_status || 'pending',
+        };
+
+        return databases.updateDocument(DATABASE_ID, COLLECTIONS.ORDERS, orderId, payload);
+    },
+
+    async updateBookingStatus(bookingId: string, status: string) {
+        const payload: JsonRecord = { status };
+        return databases.updateDocument(DATABASE_ID, COLLECTIONS.BOOKINGS, bookingId, payload);
     },
 
     // Mutations

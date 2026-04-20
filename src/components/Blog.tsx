@@ -2,20 +2,28 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, ArrowRight, X, Loader2 } from "lucide-react";
+import { Calendar, ArrowRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import AppwriteImage from "@/components/AppwriteImage";
+import { Link } from "react-router-dom";
+import { slugify } from "@/lib/slug";
+
+type BlogPost = {
+  $id: string;
+  title: string;
+  excerpt?: string;
+  content?: string;
+  author?: string;
+  date?: string;
+  image_file_id?: string;
+  slug?: string;
+};
 
 const Blog = () => {
   const { toast } = useToast();
   const [showAllBlogs, setShowAllBlogs] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<any>(null);
-
-  const handleReadMore = (post: any) => {
-    setSelectedPost(post);
-  };
 
   const handleViewAllPosts = () => {
     setShowAllBlogs(true);
@@ -28,57 +36,12 @@ const Blog = () => {
   const handleShowLess = () => {
     setShowAllBlogs(false);
   };
-  const { data: blogPosts = [], isLoading } = useQuery({
+  const { data: blogPosts = [], isLoading } = useQuery<BlogPost[]>({
     queryKey: ['blogs'],
     queryFn: api.getBlogs
   });
 
   const displayedPosts = showAllBlogs ? blogPosts : blogPosts.slice(0, 6);
-
-  // Full blog post view
-  if (selectedPost) {
-    return (
-      <section id="blog" className="py-20 bg-background">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <Button
-            variant="ghost"
-            onClick={() => setSelectedPost(null)}
-            className="mb-6"
-          >
-            <ArrowRight className="h-4 w-4 mr-2 rotate-180" />
-            Back to Blog
-          </Button>
-
-          <article className="bg-white rounded-lg shadow-card p-8">
-            <div className="mb-6">
-              <Badge variant="secondary" className="mb-4">
-                {selectedPost.category}
-              </Badge>
-              <h1 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-                {selectedPost.title}
-              </h1>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>{selectedPost.date}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  <span>5 min read</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="prose prose-lg max-w-none">
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                {selectedPost.content}
-              </p>
-            </div>
-          </article>
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section id="blog" className="py-20 bg-background">
@@ -126,13 +89,11 @@ const Blog = () => {
                       <span>{post.date}</span>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    className="w-full group-hover:bg-primary group-hover:text-white transition-all"
-                    onClick={() => handleReadMore(post)}
-                  >
-                    Read More
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <Button variant="ghost" className="w-full group-hover:bg-primary group-hover:text-white transition-all" asChild>
+                    <Link to={`/blog/${post.slug || slugify(post.title)}`}>
+                      Read More
+                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>

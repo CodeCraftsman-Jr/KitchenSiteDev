@@ -22,6 +22,9 @@ import {
   Percent
 } from 'lucide-react';
 import { MenuFilters as MenuFiltersType, MenuItem } from '@/types/menu';
+import { useLocation, useParams } from 'react-router-dom';
+import { slugify } from '@/lib/slug';
+import { useEffect } from 'react';
 
 type MenuItemDoc = {
   $id: string;
@@ -72,6 +75,8 @@ type MenuSchemaSection = {
 };
 
 export const MenuPage: React.FC = () => {
+  const location = useLocation();
+  const { categorySlug, itemSlug } = useParams();
   const [filters, setFilters] = useState<MenuFiltersType>({
     dietary: 'all',
     search: '',
@@ -142,6 +147,57 @@ export const MenuPage: React.FC = () => {
       };
     }).filter((category) => category.items.length > 0);
   }, [categoryDocs, menuItemDocs, normalizedItems]);
+
+  useEffect(() => {
+    if (!categorySlug || menuCategories.length === 0) {
+      return;
+    }
+
+    const matchedCategory = menuCategories.find((category) => slugify(category.name) === categorySlug);
+    if (!matchedCategory) {
+      return;
+    }
+
+    setFilters((previous) => {
+      if (previous.category === matchedCategory.id) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        category: matchedCategory.id,
+      };
+    });
+  }, [categorySlug, menuCategories]);
+
+  useEffect(() => {
+    if (!itemSlug || menuCategories.length === 0) {
+      return;
+    }
+
+    const matchedItem = menuCategories
+      .flatMap((category) => category.items)
+      .find((item) => slugify(item.name) === itemSlug);
+
+    if (!matchedItem) {
+      return;
+    }
+
+    setFilters((previous) => {
+      if (previous.search.toLowerCase() === matchedItem.name.toLowerCase()) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        search: matchedItem.name,
+      };
+    });
+
+    setTimeout(() => {
+      document.getElementById(`menu-item-${matchedItem.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 120);
+  }, [itemSlug, menuCategories]);
 
   const menuSchema = useMemo(() => {
     const sections: MenuSchemaSection[] = menuCategories.map((category) => ({
@@ -221,7 +277,7 @@ export const MenuPage: React.FC = () => {
       <SEO
         title="Online Menu and Ordering"
         description="Explore our full menu with veg and non-veg options, filter your favorites, and place your order online in minutes."
-        path="/menu"
+        path={location.pathname}
       />
       <JSONLD id="menu" data={menuSchema} />
       <Header />
