@@ -9,6 +9,7 @@ import GalleryEditor from './GalleryEditor';
 import OrdersEditor from './OrdersEditor';
 import BookingsEditor from './BookingsEditor';
 import SeoPagesEditor from './SeoPagesEditor';
+import ContactMessagesEditor from './ContactMessagesEditor';
 
 const AdminDashboard = () => {
   return (
@@ -20,6 +21,7 @@ const AdminDashboard = () => {
           <TabsTrigger value="menu_items">Menu Items</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="bookings">Bookings</TabsTrigger>
+          <TabsTrigger value="contact_messages">Contact Messages</TabsTrigger>
           <TabsTrigger value="reviews">Reviews</TabsTrigger>
           <TabsTrigger value="blogs">Blogs</TabsTrigger>
           <TabsTrigger value="staff">Staff</TabsTrigger>
@@ -45,6 +47,10 @@ const AdminDashboard = () => {
 
         <TabsContent value="bookings">
           <BookingsEditor />
+        </TabsContent>
+
+        <TabsContent value="contact_messages">
+          <ContactMessagesEditor />
         </TabsContent>
 
         <TabsContent value="reviews">

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/services/api";
+import { trackEvent } from "@/lib/analytics";
 import { CalendarCheck, Clock, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -51,6 +52,9 @@ const BookTable = () => {
     }
 
     setIsSubmitting(true);
+    trackEvent('booking_started', {
+      party_size: parsedPartySize,
+    });
 
     try {
       await api.createBooking({
@@ -68,11 +72,15 @@ const BookTable = () => {
         title: "Booking request received",
         description: `We have received your booking for ${date} at ${timeSlot}.`,
       });
+      trackEvent('booking_confirmed', {
+        party_size: parsedPartySize,
+      });
 
       event.currentTarget.reset();
       setPartySize("2");
       setTimeSlot("");
     } catch (error) {
+      trackEvent('booking_failed');
       toast({
         title: "Booking failed",
         description: "We could not submit your request now. Please call us directly.",

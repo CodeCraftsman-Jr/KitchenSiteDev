@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/services/api';
+import { trackEvent } from '@/lib/analytics';
 import { 
   ArrowLeft, 
   Truck, 
@@ -201,6 +202,12 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ isOpen, onClose }) =
 
   const handlePlaceOrder = async () => {
     setIsProcessing(true);
+    trackEvent('begin_checkout', {
+      value: grandTotal,
+      items: cartItems.length,
+      delivery_type: selectedDelivery,
+      payment_method: paymentMethod,
+    });
 
     try {
       const orderNo = createOrderNo();
@@ -280,6 +287,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ isOpen, onClose }) =
       await sendToTelegram(orderData);
 
       setOrderNumber(orderNo);
+      trackEvent('payment_success', {
+        value: grandTotal,
+        payment_method: paymentMethod,
+        order_no: orderNo,
+      });
       toast({
         title: 'Order placed successfully',
         description: `Your order ${orderNo} is confirmed.`,
@@ -287,6 +299,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ isOpen, onClose }) =
 
       clearCart();
     } catch (error) {
+      trackEvent('payment_failed', {
+        value: grandTotal,
+        payment_method: paymentMethod,
+      });
       toast({
         title: 'Order failed',
         description: 'We could not process your order now. Please try again.',

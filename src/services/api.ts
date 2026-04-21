@@ -51,6 +51,16 @@ type PaymentPayload = {
     paid_at?: string;
 };
 
+type ContactMessagePayload = {
+    name: string;
+    email: string;
+    phone: string;
+    subject: string;
+    message: string;
+    status?: string;
+    source?: string;
+};
+
 export const COLLECTIONS = {
     SITE_CONFIG: 'site_config',
     MENU_CATEGORIES: 'menu_categories',
@@ -65,6 +75,21 @@ export const COLLECTIONS = {
     ORDER_ITEMS: 'order_items',
     PAYMENTS: 'payments',
     SEO_PAGES: 'seo_pages',
+    CONTACT_MESSAGES: 'contact_messages',
+};
+
+const createWithFallback = async (collectionId: string, payloads: JsonRecord[]) => {
+    let lastError: unknown = null;
+
+    for (const payload of payloads) {
+        try {
+            return await databases.createDocument(DATABASE_ID, collectionId, ID.unique(), payload);
+        } catch (error) {
+            lastError = error;
+        }
+    }
+
+    throw lastError;
 };
 
 // Generic Fetch All
@@ -158,6 +183,9 @@ export const api = {
     async getSeoPages() {
         return fetchAllDocuments(COLLECTIONS.SEO_PAGES, [Query.limit(300)]);
     },
+    async getContactMessages() {
+        return fetchAllDocuments(COLLECTIONS.CONTACT_MESSAGES, [Query.orderDesc('$createdAt'), Query.limit(300)]);
+    },
     async getFiles() {
         try {
             // Use the official Appwrite SDK — bucket must have Users: Read permission
@@ -211,22 +239,40 @@ export const api = {
     },
 
     async createOrder(data: OrderPayload) {
-        return databases.createDocument(
-            DATABASE_ID,
-            COLLECTIONS.ORDERS,
-            ID.unique(),
-            {
-                ...data,
-                customer_email: data.customer_email || '',
-                address: data.address || '',
-                notes: data.notes || '',
-            }
-        );
+        const primaryPayload: JsonRecord = {
+            ...data,
+            customer_email: data.customer_email || '',
+            address: data.address || '',
+            notes: data.notes || '',
+        };
+
+        const fallbackPayload: JsonRecord = {
+            order_no: data.order_no,
+            customer_name: data.customer_name,
+            customer_phone: data.customer_phone,
+            grand_total: data.grand_total,
+            order_status: data.order_status,
+            payment_status: data.payment_status,
+            payment_method: data.payment_method,
+            placed_at: data.placed_at,
+        };
+
+        return createWithFallback(COLLECTIONS.ORDERS, [primaryPayload, fallbackPayload]);
     },
 
     async createOrderItems(items: OrderItemPayload[]) {
         return Promise.all(
-            items.map((item) => databases.createDocument(DATABASE_ID, COLLECTIONS.ORDER_ITEMS, ID.unique(), item))
+            items.map((item) => {
+                const primaryPayload: JsonRecord = { ...item };
+                const fallbackPayload: JsonRecord = {
+                    order_id: item.order_id,
+                    item_name: item.item_name,
+                    quantity: item.quantity,
+                    line_total: item.line_total,
+                };
+
+                return createWithFallback(COLLECTIONS.ORDER_ITEMS, [primaryPayload, fallbackPayload]);
+            })
         );
     },
 
@@ -240,7 +286,33 @@ export const api = {
             paid_at: data.paid_at || '',
         };
 
-        return databases.createDocument(DATABASE_ID, COLLECTIONS.PAYMENTS, ID.unique(), payload);
+        const fallbackPayload: JsonRecord = {
+            order_id: data.order_id,
+            amount: data.amount,
+            payment_status: data.payment_status,
+        };
+
+        return createWithFallback(COLLECTIONS.PAYMENTS, [payload, fallbackPayload]);
+    },
+
+    async createContactMessage(data: ContactMessagePayload) {
+        const primaryPayload: JsonRecord = {
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            subject: data.subject,
+            message: data.message,
+            status: data.status || 'new',
+            source: data.source || 'website',
+        };
+
+        const fallbackPayload: JsonRecord = {
+            name: data.name,
+            email: data.email,
+            message: data.message,
+        };
+
+        return createWithFallback(COLLECTIONS.CONTACT_MESSAGES, [primaryPayload, fallbackPayload]);
     },
 
     async updateOrderStatus(orderId: string, order_status: string, payment_status?: string) {

@@ -14,6 +14,8 @@ import MenuPage from "./components/menu/MenuPage";
 import Admin from "./pages/Admin";
 import BookTable from "./pages/BookTable";
 import QuickActionBar from "@/components/QuickActionBar";
+import FaqPage from "./pages/FaqPage";
+import PolicyPage from "./pages/PolicyPage";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +37,11 @@ const App = () => (
             <Route path="/menu/:categorySlug" element={<MenuPage />} />
             <Route path="/menu/:categorySlug/:itemSlug" element={<MenuPage />} />
             <Route path="/book-table" element={<BookTable />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/privacy-policy" element={<PolicyPage />} />
+            <Route path="/terms" element={<PolicyPage />} />
+            <Route path="/refund-policy" element={<PolicyPage />} />
+            <Route path="/shipping-delivery" element={<PolicyPage />} />
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

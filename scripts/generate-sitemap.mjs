@@ -11,6 +11,7 @@ const appwriteProjectId = process.env.VITE_APPWRITE_PROJECT_ID || '69e0a488000bb
 const appwriteDatabaseId = process.env.VITE_APPWRITE_DATABASE_ID || 'kitchen_site_db';
 const appwriteApiKey = process.env.APPWRITE_API_KEY;
 const appwriteDataSource = (process.env.APPWRITE_DATA_SOURCE || 'auto').toLowerCase();
+const appwritePublicFallback = process.env.APPWRITE_SITEMAP_PUBLIC_FALLBACK === 'true';
 
 const COLLECTIONS = {
   BLOGS: process.env.APPWRITE_BLOGS_COLLECTION_ID || 'blogs',
@@ -116,6 +117,37 @@ const listAllContent = async (clients, resourceId) => {
   }
 };
 
+const listAllDocumentsPublic = async (collectionId) => {
+  const all = [];
+  let offset = 0;
+
+  while (true) {
+    const url = new URL(`${appwriteEndpoint}/databases/${appwriteDatabaseId}/collections/${collectionId}/documents`);
+    url.searchParams.append('queries[]', Query.limit(100));
+    url.searchParams.append('queries[]', Query.offset(offset));
+
+    const response = await fetch(url, {
+      headers: {
+        'X-Appwrite-Project': appwriteProjectId,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Public fetch failed for ${collectionId}: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const docs = data.documents || [];
+    all.push(...docs);
+
+    if (docs.length < 100) break;
+    offset += 100;
+  }
+
+  return all;
+};
+
 const staticRoutes = [
   { path: '/', changefreq: 'daily', priority: '1.0' },
   { path: '/menu', changefreq: 'daily', priority: '0.95' },
@@ -123,6 +155,11 @@ const staticRoutes = [
   { path: '/about', changefreq: 'weekly', priority: '0.8' },
   { path: '/blog', changefreq: 'weekly', priority: '0.85' },
   { path: '/contact', changefreq: 'weekly', priority: '0.8' },
+  { path: '/faq', changefreq: 'weekly', priority: '0.7' },
+  { path: '/privacy-policy', changefreq: 'monthly', priority: '0.4' },
+  { path: '/terms', changefreq: 'monthly', priority: '0.4' },
+  { path: '/refund-policy', changefreq: 'monthly', priority: '0.4' },
+  { path: '/shipping-delivery', changefreq: 'monthly', priority: '0.4' },
 ];
 
 const dynamicRoutes = [];
@@ -167,6 +204,43 @@ try {
   }
   if (!appwriteApiKey) {
     console.warn('APPWRITE_API_KEY is missing for sitemap script.');
+  }
+
+  if (appwritePublicFallback) {
+    try {
+      const [blogs, categories, menuItems] = await Promise.all([
+        listAllDocumentsPublic(COLLECTIONS.BLOGS),
+        listAllDocumentsPublic(COLLECTIONS.MENU_CATEGORIES),
+        listAllDocumentsPublic(COLLECTIONS.MENU_ITEMS),
+      ]);
+
+      blogs.forEach((post) => {
+        const slug = post.slug || slugify(post.title);
+        if (slug) dynamicRoutes.push({ path: `/blog/${slug}`, changefreq: 'weekly', priority: '0.7' });
+      });
+
+      const categorySlugMap = new Map();
+      categories.forEach((category) => {
+        const categorySlug = category.slug || slugify(category.name);
+        if (!categorySlug) return;
+        categorySlugMap.set(category.$id, categorySlug);
+        dynamicRoutes.push({ path: `/menu/${categorySlug}`, changefreq: 'daily', priority: '0.85' });
+      });
+
+      menuItems.forEach((item) => {
+        const categorySlug = categorySlugMap.get(item.category_id);
+        const itemSlug = item.slug || slugify(item.name);
+        if (categorySlug && itemSlug) {
+          dynamicRoutes.push({ path: `/menu/${categorySlug}/${itemSlug}`, changefreq: 'weekly', priority: '0.6' });
+        }
+      });
+
+      console.log('Dynamic routes loaded via public Appwrite fallback.');
+    } catch (fallbackError) {
+      if (fallbackError instanceof Error) {
+        console.warn(`Public fallback also failed: ${fallbackError.message}`);
+      }
+    }
   }
 }
 

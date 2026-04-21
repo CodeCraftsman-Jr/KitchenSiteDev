@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { contactFormSchema, type ContactFormData } from "@/lib/contactFormSchema";
 import { sendContactEmail } from "@/services/emailService";
+import { api } from "@/services/api";
+import { trackEvent } from "@/lib/analytics";
 
 const ContactUs = () => {
   const { toast } = useToast();
@@ -39,6 +41,16 @@ const ContactUs = () => {
     setIsSubmitting(true);
 
     try {
+      await api.createContactMessage({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        subject: data.subject,
+        message: data.message,
+        status: 'new',
+        source: 'website-contact-form',
+      });
+
       const result = await sendContactEmail(data);
 
       if (result.success) {
@@ -47,6 +59,7 @@ const ContactUs = () => {
           description: result.message,
           duration: 5000,
         });
+        trackEvent('contact_submitted', { channel: 'contact_form' });
         reset(); // Clear the form
       } else {
         toast({
@@ -55,6 +68,7 @@ const ContactUs = () => {
           variant: "destructive",
           duration: 7000,
         });
+        trackEvent('contact_failed', { channel: 'contact_form' });
       }
     } catch (error) {
       toast({
@@ -63,6 +77,7 @@ const ContactUs = () => {
         variant: "destructive",
         duration: 7000,
       });
+      trackEvent('contact_failed', { channel: 'contact_form' });
     } finally {
       setIsSubmitting(false);
     }
